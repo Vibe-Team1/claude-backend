@@ -1,0 +1,46 @@
+# 로컬 개발 환경 설정
+spring:
+  # 데이터베이스 설정
+  datasource:
+    url: jdbc:postgresql://localhost:5432/stockroom_sns
+    username: stockroom_user
+    password: stockroom_pass
+    driver-class-name: org.postgresql.Driver
+
+  # JPA 설정
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  # OAuth2 설정 (Google)
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:your-google-client-id}
+            client-secret: ${GOOGLE_CLIENT_SECRET:your-google-client-secret}
+            redirect-uri: "http://localhost:8080/oauth2/code/google"
+
+  # SQL 초기화 설정
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/schema.sql
+      data-locations: classpath:db/data.sql
+      platform: postgresql
+
+# 로깅 설정 (로컬 환경은 더 자세히)
+logging:
+  level:
+    com.stockroom.sns: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+  file:
+    name: logs/stockroom-sns.log
+    max-size: 10MB
+    max-history: 10
+
+# 개발 도구 설정
+debug: true

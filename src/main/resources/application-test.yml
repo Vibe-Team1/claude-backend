@@ -1,0 +1,46 @@
+# 테스트 환경 설정
+spring:
+  # H2 인메모리 DB 설정 (단위 테스트용)
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  # JPA 설정
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+  # OAuth2 설정 (테스트용 mock)
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: test-client-id
+            client-secret: test-client-secret
+            redirect-uri: "http://localhost:8080/oauth2/code/google"
+
+  # SQL 초기화 비활성화
+  sql:
+    init:
+      mode: never
+
+# 로깅 설정 (테스트는 최소화)
+logging:
+  level:
+    root: WARN
+    com.stockroom.sns: INFO
+    org.springframework.test: INFO
+
+# 테스트용 JWT 설정
+app:
+  auth:
+    token-secret: test-secret-key-for-testing-only
+    token-expiry: 3600000 # 1 hour
+    refresh-token-expiry: 7200000 # 2 hours

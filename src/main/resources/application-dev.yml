@@ -1,0 +1,57 @@
+# 개발 서버 환경 설정
+spring:
+  # 데이터베이스 설정
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:postgres}:${DB_PORT:5432}/${DB_NAME:stockroom_sns}
+    username: ${DB_USERNAME:stockroom_user}
+    password: ${DB_PASSWORD:stockroom_pass}
+    driver-class-name: org.postgresql.Driver
+
+  # JPA 설정
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+  # OAuth2 설정 (Google)
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: "${OAUTH_REDIRECT_BASE_URL:https://dev.stockroom-sns.com}/oauth2/code/google"
+
+  # SQL 초기화 설정
+  sql:
+    init:
+      mode: never # 개발 서버에서는 수동 관리
+
+# 서버 설정
+server:
+  port: ${SERVER_PORT:8080}
+
+# 로깅 설정
+logging:
+  level:
+    root: INFO
+    com.stockroom.sns: INFO
+    org.springframework.security: INFO
+  file:
+    name: /var/log/stockroom-sns/app.log
+    max-size: 50MB
+    max-history: 30
+
+# 애플리케이션 설정 오버라이드
+app:
+  auth:
+    token-secret: ${JWT_SECRET}
+  cors:
+    allowed-origins:
+      - https://dev.stockroom-sns.com
+      - https://stockroom-sns.com
+  oauth2:
+    authorized-redirect-uris:
+      - https://dev.stockroom-sns.com/oauth2/redirect
+      - https://stockroom-sns.com/oauth2/redirect
