@@ -4,8 +4,9 @@ package com.example.claude_backend.infrastructure.persistence.jpa;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.example.claude_backend.domain.user.entity.User;
 import com.example.claude_backend.domain.user.repository.UserRepository;
-import org.h2.engine.User;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

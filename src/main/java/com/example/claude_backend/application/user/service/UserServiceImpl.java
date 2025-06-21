@@ -1,5 +1,6 @@
 package com.example.claude_backend.application.user.service;
 
+
 import java.util.UUID;
 
 import com.example.claude_backend.application.user.dto.UserResponse;
@@ -9,9 +10,10 @@ import com.example.claude_backend.domain.user.entity.UserProfile;
 import com.example.claude_backend.domain.user.entity.UserRole;
 import com.example.claude_backend.domain.user.exception.UserNotFoundException;
 import com.example.claude_backend.domain.user.repository.UserRepository;
+import com.example.claude_backend.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.h2.engine.User;
+//import org.h2.engine.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -103,7 +105,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional
-    public com.example.claude_backend.domain.user.entity.User processOAuthLogin(String email, String googleSub, String name, String profileImageUrl) {
+    public User processOAuthLogin(String email, String googleSub, String name, String profileImageUrl) {
         log.info("OAuth 로그인 처리 시작. 이메일: {}", email);
 
         // 기존 사용자 확인

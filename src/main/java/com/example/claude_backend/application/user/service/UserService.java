@@ -67,5 +67,5 @@ public interface UserService {
      * @param userId 사용자 ID
      * @return 사용자 Entity
      */
-    org.h2.engine.User getUserEntityById(UUID userId);
+    User getUserEntityById(UUID userId);
 }

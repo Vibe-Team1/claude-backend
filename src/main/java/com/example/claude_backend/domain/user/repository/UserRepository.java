@@ -1,6 +1,7 @@
 package com.example.claude_backend.domain.user.repository;
 
-import org.h2.engine.User;
+
+import com.example.claude_backend.domain.user.entity.User;
 
 import java.util.Optional;
 import java.util.UUID;

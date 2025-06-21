@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.SecretKey;
+
 /**
  * JWT 토큰 생성 및 검증을 담당하는 컴포넌트
  *
@@ -92,15 +94,14 @@ public class JwtTokenProvider {
      * @return 사용자 ID
      */
     public UUID getUserIdFromToken(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(key)
+        Claims claims = Jwts.parser()
+                .verifyWith((SecretKey) key)  // setSigningKey 대신 verifyWith 사용
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)  // parseClaimsJws 대신 parseSignedClaims
+                .getPayload();  // getBody() 대신 getPayload()
 
         return UUID.fromString(claims.getSubject());
     }
-
     /**
      * JWT 토큰 유효성 검증
      *
@@ -109,10 +110,10 @@ public class JwtTokenProvider {
      */
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder()
-                    .setSigningKey(key)
+            Jwts.parser()
+                    .verifyWith((SecretKey) key)
                     .build()
-                    .parseClaimsJws(token);
+                    .parseSignedClaims(token);
             return true;
         } catch (SecurityException ex) {
             log.error("잘못된 JWT 서명입니다.");
@@ -136,11 +137,11 @@ public class JwtTokenProvider {
      */
     public boolean isRefreshToken(String token) {
         try {
-            Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(key)
+            Claims claims = Jwts.parser()
+                    .verifyWith((SecretKey) key)
                     .build()
-                    .parseClaimsJws(token)
-                    .getBody();
+                    .parseSignedClaims(token)
+                    .getPayload();
 
             return "refresh".equals(claims.get("type"));
         } catch (Exception e) {
@@ -155,11 +156,11 @@ public class JwtTokenProvider {
      * @return 만료 시간
      */
     public Date getTokenExpiry(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(key)
+        Claims claims = Jwts.parser()
+                .verifyWith((SecretKey) key)
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
 
         return claims.getExpiration();
     }

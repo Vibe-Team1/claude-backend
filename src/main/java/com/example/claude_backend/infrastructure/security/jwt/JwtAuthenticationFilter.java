@@ -2,6 +2,7 @@ package com.example.claude_backend.infrastructure.security.jwt;
 
 
 import com.example.claude_backend.application.user.service.UserService;
+import com.example.claude_backend.domain.user.entity.User;
 import com.example.claude_backend.infrastructure.security.oauth2.OAuth2UserPrincipal;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -11,7 +12,6 @@ import java.io.IOException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.h2.engine.User;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
