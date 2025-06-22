@@ -4,6 +4,8 @@ import com.example.claude_backend.infrastructure.security.oauth2.OAuth2UserPrinc
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 import java.util.UUID;
@@ -33,8 +35,13 @@ public class JwtTokenProvider {
             @Value("${app.auth.token-expiry}") long tokenExpiry,
             @Value("${app.auth.refresh-token-expiry}") long refreshTokenExpiry
     ) {
-        byte[] keyBytes = Decoders.BASE64.decode(tokenSecret);
-        this.key = Keys.hmacShaKeyFor(keyBytes);
+        // 최소 256비트(32바이트) 이상인지 확인
+        if (tokenSecret.length() < 32) {
+            throw new IllegalArgumentException("JWT secret must be at least 32 characters long");
+        }
+
+        // Base64 디코딩 없이 직접 사용
+        this.key = Keys.hmacShaKeyFor(tokenSecret.getBytes(StandardCharsets.UTF_8));
         this.tokenExpiry = tokenExpiry;
         this.refreshTokenExpiry = refreshTokenExpiry;
     }

@@ -4,7 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.example.claude_backend.domain.user.exception.UserNotFoundException;
-import com.example.claude_backend.presentation.api.v1.ApiResponse;
+import com.example.claude_backend.presentation.api.v1.response.ApiResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
  * 전역 예외 처리기
@@ -143,5 +145,25 @@ public class GlobalExceptionHandler {
     private boolean isProduction() {
         String profile = System.getProperty("spring.profiles.active", "");
         return profile.contains("prod");
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<?> handleNoResourceFound(
+            NoResourceFoundException ex, HttpServletRequest request) {
+
+        String path = request.getRequestURI();
+
+        // OAuth2 관련 경로나 에러 페이지는 JSON 응답
+        if (path.contains("error") || path.contains("oauth2") || path.contains("login")) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Not Found");
+            error.put("path", path);
+            error.put("message", "요청한 페이지를 찾을 수 없습니다.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        }
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.error("RESOURCE_NOT_FOUND", "요청한 리소스를 찾을 수 없습니다."));
     }
 }

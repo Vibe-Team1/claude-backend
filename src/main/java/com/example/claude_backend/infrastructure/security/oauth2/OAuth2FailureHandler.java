@@ -1,10 +1,15 @@
 package com.example.claude_backend.infrastructure.security.oauth2;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
@@ -27,21 +32,21 @@ public class OAuth2FailureHandler extends SimpleUrlAuthenticationFailureHandler 
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
                                         AuthenticationException exception) throws IOException, ServletException {
-        String targetUrl = getCookie(request, "redirect_uri")
-                .map(Cookie::getValue)
-                .orElse("/");
-
-        // 에러 메시지를 URL 파라미터로 추가
-        targetUrl = UriComponentsBuilder.fromUriString(targetUrl)
-                .queryParam("error", exception.getLocalizedMessage())
-                .build().toUriString();
-
         log.error("OAuth2 인증 실패: {}", exception.getMessage());
 
-        // 쿠키 삭제
-        deleteCookie(request, response, "redirect_uri");
+        // JSON 응답으로 변경
+        response.setContentType("application/json;charset=UTF-8");
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
-        getRedirectStrategy().sendRedirect(request, response, targetUrl);
+        Map<String, Object> errorDetails = new HashMap<>();
+        errorDetails.put("success", false);
+        errorDetails.put("error", "OAuth2 인증 실패");
+        errorDetails.put("message", exception.getMessage());
+        errorDetails.put("timestamp", LocalDateTime.now().toString());
+
+        ObjectMapper mapper = new ObjectMapper();
+        response.getWriter().write(mapper.writeValueAsString(errorDetails));
+        response.getWriter().flush();
     }
 
     /**

@@ -1,4 +1,4 @@
--- claudeBackend Initial Data
+/*-- StockRoomSNS Initial Data
 -- 개발 및 테스트용 초기 데이터
 -- Created: 2025-01-20
 
@@ -89,7 +89,7 @@ VALUES
 -- SELECT setval('users_id_seq', (SELECT MAX(id) FROM users));
 
 -- 통계 확인용 쿼리 (주석 처리)
-/*
+
 SELECT
     'Total Users' as metric,
     COUNT(*) as count

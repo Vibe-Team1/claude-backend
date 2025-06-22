@@ -1,4 +1,4 @@
--- claudeBackend Database Schema
+/*-- StockRoomSNS Database Schema
 -- PostgreSQL 15
 -- Created: 2025-01-20
 
@@ -126,4 +126,4 @@ CREATE TABLE IF NOT EXISTS follows (
     CONSTRAINT uk_follow UNIQUE (follower_id, following_id),
     CONSTRAINT chk_follow_self CHECK (follower_id != following_id)
 );
-*/
+*/*/

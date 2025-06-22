@@ -1,6 +1,7 @@
 package com.example.claude_backend.application.user.service;
 
 
+import java.util.Optional;
 import java.util.UUID;
 
 import com.example.claude_backend.application.user.dto.UserResponse;
@@ -11,6 +12,7 @@ import com.example.claude_backend.domain.user.entity.UserRole;
 import com.example.claude_backend.domain.user.exception.UserNotFoundException;
 import com.example.claude_backend.domain.user.repository.UserRepository;
 import com.example.claude_backend.domain.user.entity.User;
+import com.example.claude_backend.infrastructure.persistence.jpa.JpaUserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 //import org.h2.engine.User;
@@ -104,29 +106,30 @@ public class UserServiceImpl implements UserService {
      * OAuth 로그인 처리
      */
     @Override
-    @Transactional
+    @Transactional  // 이미 있는지 확인
     public User processOAuthLogin(String email, String googleSub, String name, String profileImageUrl) {
         log.info("OAuth 로그인 처리 시작. 이메일: {}", email);
 
-        // 기존 사용자 확인
-        return userRepository.findByGoogleSub(googleSub)
-                .map(existingUser -> {
-                    log.info("기존 사용자 로그인. ID: {}", existingUser.getId());
-                    // 프로필 이미지 업데이트 (변경된 경우)
-                    if (existingUser.getProfile() != null && profileImageUrl != null) {
-                        existingUser.getProfile().updateProfile(profileImageUrl, null);
+        // 디버깅용 로그 추가
+        Optional<User> existingUser = userRepository.findByGoogleSub(googleSub);
+        log.info("기존 사용자 조회 결과: {}", existingUser.isPresent());
+
+        return existingUser
+                .map(user -> {
+                    log.info("기존 사용자 로그인. ID: {}", user.getId());
+                    if (user.getProfile() != null && profileImageUrl != null) {
+                        user.getProfile().updateProfile(profileImageUrl, null);
                     }
-                    return userRepository.save(existingUser);
+                    return userRepository.save(user);
                 })
                 .orElseGet(() -> {
-                    log.info("신규 사용자 생성. 이메일: {}", email);
-                    return createNewUser(email, googleSub, name, profileImageUrl);
+                    log.info("신규 사용자 생성 시작");
+                    User newUser = createNewUser(email, googleSub, name, profileImageUrl);
+                    log.info("신규 사용자 생성 완료. ID: {}", newUser.getId());
+                    return newUser;
                 });
     }
 
-    /**
-     * 사용자 Entity 조회
-     */
     @Override
     public User getUserEntityById(UUID userId) {
         return userRepository.findById(userId)
@@ -161,6 +164,10 @@ public class UserServiceImpl implements UserService {
                 .roleName(UserRole.RoleName.ROLE_USER)
                 .build();
         newUser.addRole(userRole);
+
+        User savedUser = userRepository.save(newUser);
+        log.info("DB에 사용자 저장 완료. ID: {}, Email: {}", savedUser.getId(), savedUser.getEmail());
+
 
         return userRepository.save(newUser);
     }

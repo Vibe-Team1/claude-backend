@@ -59,7 +59,10 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             throw new IllegalArgumentException("승인되지 않은 리다이렉트 URI입니다: " + redirectUri.get());
         }
 
-        String targetUrl = redirectUri.orElse(getDefaultTargetUrl());
+        // Frontend 연결시 아래 해제
+        // String targetUrl = redirectUri.orElse(getDefaultTargetUrl());
+
+        String targetUrl = "/auth/success";  // 프론트엔드 URL 대신 백엔드 URL 사용
 
         // JWT 토큰 생성
         OAuth2UserPrincipal principal = (OAuth2UserPrincipal) authentication.getPrincipal();

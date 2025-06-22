@@ -1,5 +1,4 @@
-package com.example.claude_backend.presentation.api.v1;
-
+package com.example.claude_backend.presentation.api.v1.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.LocalDateTime;

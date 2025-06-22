@@ -5,6 +5,7 @@ import com.example.claude_backend.application.user.dto.UserResponse;
 import com.example.claude_backend.application.user.dto.UserUpdateRequest;
 import com.example.claude_backend.application.user.service.UserService;
 import com.example.claude_backend.common.util.SecurityUtil;
+import com.example.claude_backend.presentation.api.v1.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;

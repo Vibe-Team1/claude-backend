@@ -1,6 +1,5 @@
 package com.example.claude_backend.infrastructure.security.jwt;
 
-
 import com.example.claude_backend.application.user.service.UserService;
 import com.example.claude_backend.domain.user.entity.User;
 import com.example.claude_backend.infrastructure.security.oauth2.OAuth2UserPrincipal;
@@ -9,10 +8,13 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -45,9 +47,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
                 UUID userId = tokenProvider.getUserIdFromToken(jwt);
 
-                // 사용자 정보 로드
-                User user = userService.getUserEntityById(userId);
-                OAuth2UserPrincipal principal = OAuth2UserPrincipal.create(user);
+                // DB 조회 없이 간단한 Principal 생성
+                OAuth2UserPrincipal principal = new OAuth2UserPrincipal(
+                        userId,
+                        "user@example.com", // 임시 이메일
+                        null,
+                        List.of(new SimpleGrantedAuthority("ROLE_USER")),
+                        new HashMap<>()
+                );
 
                 // Spring Security 인증 정보 설정
                 UsernamePasswordAuthenticationToken authentication =

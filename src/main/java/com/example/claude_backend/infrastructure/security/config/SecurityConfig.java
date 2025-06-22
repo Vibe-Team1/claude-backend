@@ -1,11 +1,10 @@
 package com.example.claude_backend.infrastructure.security.config;
 
-import java.util.List;
-
 import com.example.claude_backend.application.auth.CustomOAuth2UserService;
 import com.example.claude_backend.infrastructure.security.jwt.JwtAuthenticationFilter;
 import com.example.claude_backend.infrastructure.security.oauth2.OAuth2FailureHandler;
 import com.example.claude_backend.infrastructure.security.oauth2.OAuth2SuccessHandler;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -83,7 +82,12 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/api-docs/**",
                                 "/v3/api-docs/**",
-                                "/actuator/health"
+                                "/actuator/health",
+                                "/api/v1/public/**",
+                                "/api/v1/test/**",          //test
+                                "/auth/success",
+                                "/api/v1/auth/error"
+
                         ).permitAll()
 
                         // OAuth2 엔드포인트
@@ -99,11 +103,20 @@ public class SecurityConfig {
 
                 // OAuth2 로그인 설정
                 .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/oauth2/authorization/google")
+                        .authorizationEndpoint(authorization -> authorization
+                                .baseUri("/oauth2/authorization")
+                        )
+                        .redirectionEndpoint(redirection -> redirection
+                                .baseUri("/login/oauth2/code/*")  // 이 부분이 중요!
+                        )
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(customOAuth2UserService)
                         )
                         .successHandler(oAuth2SuccessHandler)
                         .failureHandler(oAuth2FailureHandler)
+                        .failureUrl("/api/v1/auth/error")
+
                 );
 
         // JWT 필터 추가

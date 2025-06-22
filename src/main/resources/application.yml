@@ -1,5 +1,12 @@
+
 # 기본 애플리케이션 설정
 spring:
+  mvc:
+    throw-exception-if-no-handler-found: false
+  web:
+    resources:
+      add-mappings: true
+
   application:
     name: stockroom-sns
 
@@ -104,27 +111,15 @@ logging:
 # 애플리케이션 설정
 app:
   auth:
-    token-secret: ${JWT_SECRET:default-secret-key-for-development-only-change-in-production}
+    token-secret: ${JWT_SECRET:ThisIsADefaultSecretKeyForDevelopmentOnly12345}
     token-expiry: 86400000 # 1 day in milliseconds
     refresh-token-expiry: 604800000 # 7 days in milliseconds
   cors:
-    allowed-origins:
-      - http://localhost:3000
-      - http://localhost:5173
-    allowed-methods:
-      - GET
-      - POST
-      - PUT
-      - PATCH
-      - DELETE
-      - OPTIONS
-    allowed-headers:
-      - "*"
-    exposed-headers:
-      - Authorization
+    allowed-origins: http://localhost:3000,http://localhost:5173
+    allowed-methods: GET,POST,PUT,PATCH,DELETE,OPTIONS
+    allowed-headers: "*"
+    exposed-headers: Authorization
     allow-credentials: true
     max-age: 3600
   oauth2:
-    authorized-redirect-uris:
-      - http://localhost:3000/oauth2/redirect
-      - http://localhost:5173/oauth2/redirect
+    authorized-redirect-uris: http://localhost:3000/oauth2/redirect,http://localhost:5173/oauth2/redirect
