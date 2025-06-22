@@ -13,9 +13,10 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
-        basePackages = "com.example.claude_backend.infrastructure.persistence.jpa"
+        basePackages = {
+                "com.example.claude_backend.infrastructure.persistence.jpa",
+                "com.example.claude_backend.domain"  // 도메인 전체 포함
+        }
 )
 public class JpaConfig {
-    // JPA 관련 추가 설정이 필요한 경우 여기에 추가
-    // 예: QueryDSL, Custom Repository 구현체 등
 }
