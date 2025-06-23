@@ -1,6 +1,7 @@
 package com.example.claude_backend.domain.user.entity;
 
 import com.example.claude_backend.domain.common.BaseTimeEntity;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
@@ -15,17 +16,14 @@ import org.hibernate.annotations.GenericGenerator;
  * @since 2025-01-20
  */
 @Entity
-@Table(name = "users",
-        indexes = {
-                @Index(name = "idx_users_email", columnList = "email"),
-                @Index(name = "idx_users_google_sub", columnList = "google_sub"),
-                @Index(name = "idx_users_nickname", columnList = "nickname")
-        },
-        uniqueConstraints = {
-                @UniqueConstraint(name = "uk_users_email", columnNames = "email"),
-                @UniqueConstraint(name = "uk_users_google_sub", columnNames = "google_sub")
-        }
-)
+@Table(name = "users", indexes = {
+        @Index(name = "idx_users_email", columnList = "email"),
+        @Index(name = "idx_users_google_sub", columnList = "google_sub"),
+        @Index(name = "idx_users_nickname", columnList = "nickname")
+}, uniqueConstraints = {
+        @UniqueConstraint(name = "uk_users_email", columnNames = "email"),
+        @UniqueConstraint(name = "uk_users_google_sub", columnNames = "google_sub")
+})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -71,6 +69,7 @@ public class User extends BaseTimeEntity {
      * 사용자 프로필 (1:1 관계)
      */
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
     private UserProfile profile;
 
     /**
@@ -78,6 +77,7 @@ public class User extends BaseTimeEntity {
      */
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
+    @JsonManagedReference
     private Set<UserRole> roles = new HashSet<>();
 
     /**
@@ -125,8 +125,8 @@ public class User extends BaseTimeEntity {
      * 계정 상태 enum
      */
     public enum UserStatus {
-        ACTIVE,      // 활성
-        INACTIVE,    // 비활성
-        SUSPENDED    // 정지
+        ACTIVE, // 활성
+        INACTIVE, // 비활성
+        SUSPENDED // 정지
     }
 }

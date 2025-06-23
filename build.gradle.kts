@@ -41,6 +41,9 @@ dependencies {
 	runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.3")
 	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.3")
 
+	// Jackson JSR310 (LocalDateTime 지원)
+	implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+
 	// API Documentation
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
 

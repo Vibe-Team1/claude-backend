@@ -1,6 +1,7 @@
 package com.example.claude_backend.domain.user.entity;
 
 import com.example.claude_backend.domain.common.BaseTimeEntity;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import java.util.UUID;
 import lombok.*;
@@ -35,6 +36,7 @@ public class UserProfile extends BaseTimeEntity {
      */
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
+    @JsonBackReference
     private User user;
 
     /**

@@ -106,4 +106,18 @@ SELECT
     COUNT(DISTINCT user_id) as count
 FROM user_roles
 WHERE role_name = 'ROLE_ADMIN';
+
+-- 테스트용 사용자 데이터 (이미 있다면 무시)
+INSERT INTO users (id, google_sub, email, nickname, status, created_at, updated_at)
+VALUES 
+    ('550e8400-e29b-41d4-a716-446655440000', 'test_google_sub_1', 'test1@example.com', 'testuser1', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('550e8400-e29b-41d4-a716-446655440001', 'test_google_sub_2', 'test2@example.com', 'testuser2', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+ON CONFLICT (google_sub) DO NOTHING;
+
+-- 테스트용 OAuth 토큰 데이터
+INSERT INTO oauth_tokens (id, user_id, provider, access_token, refresh_token, expires_at, created_at, updated_at)
+VALUES 
+    ('660e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440000', 'GOOGLE', 'test_access_token_1', 'test_refresh_token_1', CURRENT_TIMESTAMP + INTERVAL '1 day', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('660e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440001', 'GOOGLE', 'test_access_token_2', 'test_refresh_token_2', CURRENT_TIMESTAMP + INTERVAL '1 day', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+ON CONFLICT (id) DO NOTHING;
 */

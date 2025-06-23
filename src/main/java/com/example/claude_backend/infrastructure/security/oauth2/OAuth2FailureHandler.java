@@ -1,5 +1,6 @@
 package com.example.claude_backend.infrastructure.security.oauth2;
 
+import com.example.claude_backend.presentation.api.v1.response.ApiResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -31,21 +32,19 @@ public class OAuth2FailureHandler extends SimpleUrlAuthenticationFailureHandler 
      */
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
-                                        AuthenticationException exception) throws IOException, ServletException {
+            AuthenticationException exception) throws IOException, ServletException {
         log.error("OAuth2 인증 실패: {}", exception.getMessage());
 
         // JSON 응답으로 변경
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
-        Map<String, Object> errorDetails = new HashMap<>();
-        errorDetails.put("success", false);
-        errorDetails.put("error", "OAuth2 인증 실패");
-        errorDetails.put("message", exception.getMessage());
-        errorDetails.put("timestamp", LocalDateTime.now().toString());
+        ApiResponse<String> errorResponse = ApiResponse.error(
+                "OAUTH2_AUTHENTICATION_FAILED",
+                "OAuth2 인증에 실패했습니다: " + exception.getMessage());
 
         ObjectMapper mapper = new ObjectMapper();
-        response.getWriter().write(mapper.writeValueAsString(errorDetails));
+        response.getWriter().write(mapper.writeValueAsString(errorResponse));
         response.getWriter().flush();
     }
 

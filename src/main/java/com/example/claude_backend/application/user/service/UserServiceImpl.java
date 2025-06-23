@@ -1,6 +1,5 @@
 package com.example.claude_backend.application.user.service;
 
-
 import java.util.Optional;
 import java.util.UUID;
 
@@ -59,6 +58,16 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * 이메일로 사용자 Entity 조회 (내부 사용)
+     */
+    @Override
+    public User findByEmail(String email) {
+        log.debug("사용자 Entity 조회 시작. 이메일: {}", email);
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException(email));
+    }
+
+    /**
      * 사용자 정보 수정
      */
     @Override
@@ -106,7 +115,7 @@ public class UserServiceImpl implements UserService {
      * OAuth 로그인 처리
      */
     @Override
-    @Transactional  // 이미 있는지 확인
+    @Transactional // 이미 있는지 확인
     public User processOAuthLogin(String email, String googleSub, String name, String profileImageUrl) {
         log.info("OAuth 로그인 처리 시작. 이메일: {}", email);
 
@@ -167,7 +176,6 @@ public class UserServiceImpl implements UserService {
 
         User savedUser = userRepository.save(newUser);
         log.info("DB에 사용자 저장 완료. ID: {}, Email: {}", savedUser.getId(), savedUser.getEmail());
-
 
         return userRepository.save(newUser);
     }
