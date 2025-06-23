@@ -143,6 +143,40 @@ CREATE TABLE IF NOT EXISTS user_stocks (
 CREATE INDEX IF NOT EXISTS idx_user_stocks_user_id ON user_stocks(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_stocks_stock_id ON user_stocks(stock_id);
 
+-- 사용자 배경 테이블
+CREATE TABLE IF NOT EXISTS user_backgrounds (
+    id BIGSERIAL PRIMARY KEY,
+    user_id UUID NOT NULL,
+    background_code VARCHAR(2) NOT NULL,
+    acquired_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_user_background_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT uk_user_background UNIQUE (user_id, background_code),
+    CONSTRAINT chk_background_code CHECK (background_code IN ('01', '02'))
+);
+
+-- 사용자 배경 인덱스
+CREATE INDEX IF NOT EXISTS idx_user_backgrounds_user_id ON user_backgrounds(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_backgrounds_background_code ON user_backgrounds(background_code);
+
+-- 사용자 캐릭터 테이블
+CREATE TABLE IF NOT EXISTS user_characters (
+    id BIGSERIAL PRIMARY KEY,
+    user_id UUID NOT NULL,
+    character_code VARCHAR(3) NOT NULL,
+    acquired_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_user_character_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT uk_user_character UNIQUE (user_id, character_code),
+    CONSTRAINT chk_character_code CHECK (character_code ~ '^(0[0-9][0-9]|1[0-7][0-9]|180)$')
+);
+
+-- 사용자 캐릭터 인덱스
+CREATE INDEX IF NOT EXISTS idx_user_characters_user_id ON user_characters(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_characters_character_code ON user_characters(character_code);
+
 -- 업데이트 시간 자동 갱신 함수
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -176,3 +210,9 @@ CREATE TRIGGER update_trades_updated_at BEFORE UPDATE
 
 CREATE TRIGGER update_user_stocks_updated_at BEFORE UPDATE
     ON user_stocks FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_user_backgrounds_updated_at BEFORE UPDATE
+    ON user_backgrounds FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_user_characters_updated_at BEFORE UPDATE
+    ON user_characters FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

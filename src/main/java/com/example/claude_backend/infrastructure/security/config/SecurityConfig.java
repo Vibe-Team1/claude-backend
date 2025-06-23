@@ -32,111 +32,108 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-  private final CustomOAuth2UserService customOAuth2UserService;
-  private final OAuth2SuccessHandler oAuth2SuccessHandler;
-  private final OAuth2FailureHandler oAuth2FailureHandler;
-  private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final OAuth2FailureHandler oAuth2FailureHandler;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-  @Value("${app.cors.allowed-origins}")
-  private String[] allowedOrigins;
+    @Value("${app.cors.allowed-origins}")
+    private String[] allowedOrigins;
 
-  @Value("${app.cors.allowed-methods}")
-  private String[] allowedMethods;
+    @Value("${app.cors.allowed-methods}")
+    private String[] allowedMethods;
 
-  @Value("${app.cors.allowed-headers}")
-  private String[] allowedHeaders;
+    @Value("${app.cors.allowed-headers}")
+    private String[] allowedHeaders;
 
-  @Value("${app.cors.exposed-headers}")
-  private String[] exposedHeaders;
+    @Value("${app.cors.exposed-headers}")
+    private String[] exposedHeaders;
 
-  @Value("${app.cors.allow-credentials}")
-  private boolean allowCredentials;
+    @Value("${app.cors.allow-credentials}")
+    private boolean allowCredentials;
 
-  @Value("${app.cors.max-age}")
-  private long maxAge;
+    @Value("${app.cors.max-age}")
+    private long maxAge;
 
-  /** Security Filter Chain 설정 */
-  @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    http
-        // CSRF 비활성화 (JWT 사용)
-        .csrf(AbstractHttpConfigurer::disable)
+    /** Security Filter Chain 설정 */
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+                // CSRF 비활성화 (JWT 사용)
+                .csrf(AbstractHttpConfigurer::disable)
 
-        // CORS 설정
-        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                // CORS 설정
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-        // 세션 정책 설정 (OAuth2 로그인을 위해 IF_REQUIRED로 변경)
-        .sessionManagement(
-            session ->
-                session
-                    .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                    .maximumSessions(1)
-                    .maxSessionsPreventsLogin(false))
+                // 세션 정책 설정 (OAuth2 로그인을 위해 IF_REQUIRED로 변경)
+                .sessionManagement(
+                        session -> session
+                                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                                .maximumSessions(1)
+                                .maxSessionsPreventsLogin(false))
 
-        // 요청 인가 설정
-        .authorizeHttpRequests(
-            auth ->
-                auth
-                    // 공개 엔드포인트
-                    .requestMatchers(
-                        "/",
-                        "/error",
-                        "/favicon.ico",
-                        "/swagger-ui/**",
-                        "/api-docs/**",
-                        "/v3/api-docs/**",
-                        "/actuator/health",
-                        "/api/v1/public/**",
-                        "/api/v1/test/**", // test
-                        "/auth/success",
-                        "/api/v1/auth/error")
-                    .permitAll()
+                // 요청 인가 설정
+                .authorizeHttpRequests(
+                        auth -> auth
+                                // 공개 엔드포인트
+                                .requestMatchers(
+                                        "/",
+                                        "/error",
+                                        "/favicon.ico",
+                                        "/swagger-ui/**",
+                                        "/api-docs/**",
+                                        "/v3/api-docs/**",
+                                        "/actuator/health",
+                                        "/api/v1/public/**",
+                                        "/api/v1/test/**", // test
+                                        "/auth/success",
+                                        "/api/v1/auth/error")
+                                .permitAll()
 
-                    // OAuth2 엔드포인트
-                    .requestMatchers("/oauth2/**")
-                    .permitAll()
+                                // OAuth2 엔드포인트
+                                .requestMatchers("/oauth2/**")
+                                .permitAll()
 
-                    // API 엔드포인트
-                    .requestMatchers("/api/v1/users/me")
-                    .authenticated()
-                    .requestMatchers("/api/v1/admin/**")
-                    .hasRole("ADMIN")
+                                // API 엔드포인트
+                                .requestMatchers("/api/v1/users/me")
+                                .authenticated()
+                                .requestMatchers("/api/v1/admin/**")
+                                .hasRole("ADMIN")
 
-                    // 나머지 모든 요청은 인증 필요
-                    .anyRequest()
-                    .authenticated())
+                                // 나머지 모든 요청은 인증 필요
+                                .anyRequest()
+                                .authenticated())
 
-        // OAuth2 로그인 설정
-        .oauth2Login(
-            oauth2 ->
-                oauth2
-                    .authorizationEndpoint(
-                        authorization -> authorization.baseUri("/oauth2/authorization"))
-                    .redirectionEndpoint(redirection -> redirection.baseUri("/login/oauth2/code/*"))
-                    .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
-                    .successHandler(oAuth2SuccessHandler)
-                    .failureHandler(oAuth2FailureHandler));
+                // OAuth2 로그인 설정
+                .oauth2Login(
+                        oauth2 -> oauth2
+                                .authorizationEndpoint(
+                                        authorization -> authorization.baseUri("/oauth2/authorization"))
+                                .redirectionEndpoint(redirection -> redirection.baseUri("/login/oauth2/code/*"))
+                                .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+                                .successHandler(oAuth2SuccessHandler)
+                                .failureHandler(oAuth2FailureHandler));
 
-    // JWT 필터 추가
-    http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        // JWT 필터 추가
+        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-    return http.build();
-  }
+        return http.build();
+    }
 
-  /** CORS 설정 */
-  @Bean
-  public CorsConfigurationSource corsConfigurationSource() {
-    CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(List.of(allowedOrigins));
-    configuration.setAllowedMethods(List.of(allowedMethods));
-    configuration.setAllowedHeaders(List.of(allowedHeaders));
-    configuration.setExposedHeaders(List.of(exposedHeaders));
-    configuration.setAllowCredentials(allowCredentials);
-    configuration.setMaxAge(maxAge);
+    /** CORS 설정 */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of(allowedOrigins));
+        configuration.setAllowedMethods(List.of(allowedMethods));
+        configuration.setAllowedHeaders(List.of(allowedHeaders));
+        configuration.setExposedHeaders(List.of(exposedHeaders));
+        configuration.setAllowCredentials(allowCredentials);
+        configuration.setMaxAge(maxAge);
 
-    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", configuration);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
 
-    return source;
-  }
+        return source;
+    }
 }

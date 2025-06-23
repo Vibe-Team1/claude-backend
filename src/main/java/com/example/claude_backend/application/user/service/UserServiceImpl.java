@@ -12,6 +12,10 @@ import com.example.claude_backend.domain.user.entity.UserStock;
 import com.example.claude_backend.domain.user.exception.UserNotFoundException;
 import com.example.claude_backend.domain.user.repository.UserRepository;
 import com.example.claude_backend.domain.user.repository.UserStockRepository;
+import com.example.claude_backend.domain.user.repository.UserBackgroundRepository;
+import com.example.claude_backend.domain.user.repository.UserCharacterRepository;
+import com.example.claude_backend.domain.user.entity.UserBackground;
+import com.example.claude_backend.domain.user.entity.UserCharacter;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
@@ -38,6 +42,8 @@ public class UserServiceImpl implements UserService {
   private final UserStockRepository userStockRepository;
   private final UserMapper userMapper;
   private final AccountService accountService;
+  private final UserBackgroundRepository userBackgroundRepository;
+  private final UserCharacterRepository userCharacterRepository;
 
   /** 사용자 ID로 조회 */
   @Override
@@ -184,6 +190,27 @@ public class UserServiceImpl implements UserService {
       log.error("사용자 계좌 생성 실패. ID: {}, Error: {}", savedUser.getId(), e.getMessage());
       // 계좌 생성 실패해도 사용자 생성은 계속 진행
     }
+
+    // === 배경/캐릭터 기본 지급 ===
+    try {
+      if (!userBackgroundRepository.existsByUserIdAndBackgroundCode(savedUser.getId(), "01")) {
+        userBackgroundRepository.save(UserBackground.builder()
+            .userId(savedUser.getId())
+            .backgroundCode("01")
+            .build());
+        log.info("기본 배경(01) 지급 완료. ID: {}", savedUser.getId());
+      }
+      if (!userCharacterRepository.existsByUserIdAndCharacterCode(savedUser.getId(), "001")) {
+        userCharacterRepository.save(UserCharacter.builder()
+            .userId(savedUser.getId())
+            .characterCode("001")
+            .build());
+        log.info("기본 캐릭터(001) 지급 완료. ID: {}", savedUser.getId());
+      }
+    } catch (Exception e) {
+      log.error("기본 배경/캐릭터 지급 실패. ID: {}, Error: {}", savedUser.getId(), e.getMessage());
+    }
+    // =========================
 
     return savedUser;
   }

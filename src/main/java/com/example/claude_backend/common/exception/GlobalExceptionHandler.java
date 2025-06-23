@@ -1,5 +1,9 @@
 package com.example.claude_backend.common.exception;
 
+import com.example.claude_backend.domain.user.exception.BackgroundAlreadyOwnedException;
+import com.example.claude_backend.domain.user.exception.CharacterAlreadyOwnedException;
+import com.example.claude_backend.domain.user.exception.InvalidBackgroundCodeException;
+import com.example.claude_backend.domain.user.exception.InvalidCharacterCodeException;
 import com.example.claude_backend.domain.user.exception.UserNotFoundException;
 import com.example.claude_backend.presentation.api.v1.response.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,6 +39,46 @@ public class GlobalExceptionHandler {
 
     return ResponseEntity.status(HttpStatus.NOT_FOUND)
         .body(ApiResponse.error("USER_NOT_FOUND", ex.getMessage()));
+  }
+
+  /** BackgroundAlreadyOwnedException 처리 */
+  @ExceptionHandler(BackgroundAlreadyOwnedException.class)
+  public ResponseEntity<ApiResponse<Void>> handleBackgroundAlreadyOwnedException(
+      BackgroundAlreadyOwnedException ex, WebRequest request) {
+    log.error("이미 보유 중인 배경: {}", ex.getMessage());
+
+    return ResponseEntity.status(HttpStatus.CONFLICT)
+        .body(ApiResponse.error("BACKGROUND_ALREADY_OWNED", ex.getMessage()));
+  }
+
+  /** CharacterAlreadyOwnedException 처리 */
+  @ExceptionHandler(CharacterAlreadyOwnedException.class)
+  public ResponseEntity<ApiResponse<Void>> handleCharacterAlreadyOwnedException(
+      CharacterAlreadyOwnedException ex, WebRequest request) {
+    log.error("이미 보유 중인 캐릭터: {}", ex.getMessage());
+
+    return ResponseEntity.status(HttpStatus.CONFLICT)
+        .body(ApiResponse.error("CHARACTER_ALREADY_OWNED", ex.getMessage()));
+  }
+
+  /** InvalidBackgroundCodeException 처리 */
+  @ExceptionHandler(InvalidBackgroundCodeException.class)
+  public ResponseEntity<ApiResponse<Void>> handleInvalidBackgroundCodeException(
+      InvalidBackgroundCodeException ex, WebRequest request) {
+    log.error("유효하지 않은 배경 코드: {}", ex.getMessage());
+
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(ApiResponse.error("INVALID_BACKGROUND_CODE", ex.getMessage()));
+  }
+
+  /** InvalidCharacterCodeException 처리 */
+  @ExceptionHandler(InvalidCharacterCodeException.class)
+  public ResponseEntity<ApiResponse<Void>> handleInvalidCharacterCodeException(
+      InvalidCharacterCodeException ex, WebRequest request) {
+    log.error("유효하지 않은 캐릭터 코드: {}", ex.getMessage());
+
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(ApiResponse.error("INVALID_CHARACTER_CODE", ex.getMessage()));
   }
 
   /** Validation 예외 처리 */
