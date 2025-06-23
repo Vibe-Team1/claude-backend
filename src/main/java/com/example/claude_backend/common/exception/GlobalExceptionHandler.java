@@ -7,6 +7,8 @@ import com.example.claude_backend.domain.user.exception.FriendAlreadyExistsExcep
 import com.example.claude_backend.domain.user.exception.InvalidBackgroundCodeException;
 import com.example.claude_backend.domain.user.exception.InvalidCharacterCodeException;
 import com.example.claude_backend.domain.user.exception.UserNotFoundException;
+import com.example.claude_backend.domain.user.exception.BackgroundNotOwnedException;
+import com.example.claude_backend.domain.user.exception.CharacterNotOwnedException;
 import com.example.claude_backend.domain.shop.exception.InsufficientAcornException;
 import com.example.claude_backend.domain.shop.exception.InvalidDrawTypeException;
 import com.example.claude_backend.presentation.api.v1.response.ApiResponse;
@@ -123,6 +125,26 @@ public class GlobalExceptionHandler {
 
     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
         .body(ApiResponse.error("INVALID_DRAW_TYPE", ex.getMessage()));
+  }
+
+  /** BackgroundNotOwnedException 처리 */
+  @ExceptionHandler(BackgroundNotOwnedException.class)
+  public ResponseEntity<ApiResponse<Void>> handleBackgroundNotOwnedException(
+      BackgroundNotOwnedException ex, WebRequest request) {
+    log.error("보유하지 않은 배경: {}", ex.getMessage());
+
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(ApiResponse.error("BACKGROUND_NOT_OWNED", ex.getMessage()));
+  }
+
+  /** CharacterNotOwnedException 처리 */
+  @ExceptionHandler(CharacterNotOwnedException.class)
+  public ResponseEntity<ApiResponse<Void>> handleCharacterNotOwnedException(
+      CharacterNotOwnedException ex, WebRequest request) {
+    log.error("보유하지 않은 캐릭터: {}", ex.getMessage());
+
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(ApiResponse.error("CHARACTER_NOT_OWNED", ex.getMessage()));
   }
 
   /** Validation 예외 처리 */

@@ -2,22 +2,30 @@ package com.example.claude_backend.application.user.service;
 
 import com.example.claude_backend.application.user.dto.BackgroundRequest;
 import com.example.claude_backend.application.user.dto.CharacterRequest;
+import com.example.claude_backend.application.user.dto.CustomizationSelectRequest;
+import com.example.claude_backend.application.user.dto.CustomizationSelectResponse;
 import com.example.claude_backend.application.user.dto.UserCustomizationResponse;
+import com.example.claude_backend.domain.user.entity.User;
 import com.example.claude_backend.domain.user.entity.UserBackground;
 import com.example.claude_backend.domain.user.entity.UserCharacter;
 import com.example.claude_backend.domain.user.exception.BackgroundAlreadyOwnedException;
+import com.example.claude_backend.domain.user.exception.BackgroundNotOwnedException;
 import com.example.claude_backend.domain.user.exception.CharacterAlreadyOwnedException;
+import com.example.claude_backend.domain.user.exception.CharacterNotOwnedException;
 import com.example.claude_backend.domain.user.exception.InvalidBackgroundCodeException;
 import com.example.claude_backend.domain.user.exception.InvalidCharacterCodeException;
 import com.example.claude_backend.domain.user.repository.UserBackgroundRepository;
 import com.example.claude_backend.domain.user.repository.UserCharacterRepository;
+import com.example.claude_backend.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -25,6 +33,7 @@ public class UserCustomizationServiceImpl implements UserCustomizationService {
 
     private final UserBackgroundRepository userBackgroundRepository;
     private final UserCharacterRepository userCharacterRepository;
+    private final UserRepository userRepository;
 
     @Override
     public UserCustomizationResponse getUserCustomization(UUID userId) {
@@ -83,6 +92,48 @@ public class UserCustomizationServiceImpl implements UserCustomizationService {
                 .build();
 
         userCharacterRepository.save(userCharacter);
+    }
+
+    @Override
+    @Transactional
+    public CustomizationSelectResponse selectCustomization(UUID userId, CustomizationSelectRequest request) {
+        log.debug("커스터마이제이션 선택 요청. userId: {}, backgroundCode: {}, characterCode: {}",
+                userId, request.getBackgroundCode(), request.getCharacterCode());
+
+        // 사용자 조회 (프로필 포함)
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: " + userId));
+
+        if (user.getProfile() == null) {
+            throw new RuntimeException("사용자 프로필을 찾을 수 없습니다: " + userId);
+        }
+
+        // 배경 코드 검증
+        if (request.getBackgroundCode() != null) {
+            if (!userBackgroundRepository.existsByUserIdAndBackgroundCode(userId, request.getBackgroundCode())) {
+                throw new BackgroundNotOwnedException(userId, request.getBackgroundCode());
+            }
+        }
+
+        // 캐릭터 코드 검증
+        if (request.getCharacterCode() != null) {
+            if (!userCharacterRepository.existsByUserIdAndCharacterCode(userId, request.getCharacterCode())) {
+                throw new CharacterNotOwnedException(userId, request.getCharacterCode());
+            }
+        }
+
+        // 프로필 업데이트
+        user.getProfile().updateCustomization(request.getBackgroundCode(), request.getCharacterCode());
+        userRepository.save(user);
+
+        log.info("커스터마이제이션 선택 완료. userId: {}, backgroundCode: {}, characterCode: {}",
+                userId, user.getProfile().getCurrentBackgroundCode(), user.getProfile().getCurrentCharacterCode());
+
+        return CustomizationSelectResponse.builder()
+                .message("Customization updated")
+                .currentBackground(user.getProfile().getCurrentBackgroundCode())
+                .currentCharacter(user.getProfile().getCurrentCharacterCode())
+                .build();
     }
 
     private boolean isValidBackgroundCode(String backgroundCode) {

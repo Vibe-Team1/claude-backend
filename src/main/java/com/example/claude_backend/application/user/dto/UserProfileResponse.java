@@ -32,6 +32,12 @@ public class UserProfileResponse {
   /** 룸 레벨 */
   private Integer roomLevel;
 
+  /** 현재 선택된 배경 코드 */
+  private String currentBackgroundCode;
+
+  /** 현재 선택된 캐릭터 코드 */
+  private String currentCharacterCode;
+
   /**
    * Entity를 DTO로 변환하는 정적 팩토리 메서드
    *
@@ -44,6 +50,8 @@ public class UserProfileResponse {
         .bio(profile.getBio())
         .totalAssets(profile.getTotalAssets())
         .roomLevel(profile.getRoomLevel())
+        .currentBackgroundCode(profile.getCurrentBackgroundCode())
+        .currentCharacterCode(profile.getCurrentCharacterCode())
         .build();
   }
 }

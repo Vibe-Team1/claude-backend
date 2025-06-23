@@ -53,6 +53,16 @@ public class UserProfile extends BaseTimeEntity {
   @Builder.Default
   private Integer roomLevel = 1;
 
+  /** 현재 선택된 배경 코드 */
+  @Column(name = "current_background_code", length = 2)
+  @Builder.Default
+  private String currentBackgroundCode = "01";
+
+  /** 현재 선택된 캐릭터 코드 */
+  @Column(name = "current_character_code", length = 3)
+  @Builder.Default
+  private String currentCharacterCode = "001";
+
   /** 프로필 업데이트 */
   public void updateProfile(String profileImageUrl, String bio) {
     if (profileImageUrl != null) {
@@ -60,6 +70,16 @@ public class UserProfile extends BaseTimeEntity {
     }
     if (bio != null) {
       this.bio = bio;
+    }
+  }
+
+  /** 현재 선택된 커스터마이제이션 업데이트 */
+  public void updateCustomization(String backgroundCode, String characterCode) {
+    if (backgroundCode != null) {
+      this.currentBackgroundCode = backgroundCode;
+    }
+    if (characterCode != null) {
+      this.currentCharacterCode = characterCode;
     }
   }
 

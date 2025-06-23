@@ -23,13 +23,17 @@ CREATE INDEX IF NOT EXISTS idx_users_status ON users(status);
 CREATE TABLE IF NOT EXISTS user_profiles (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL UNIQUE,
-    profile_image_url VARCHAR(500),
-    bio VARCHAR(1000),
-    total_assets BIGINT DEFAULT 10000000,
-    room_level INTEGER DEFAULT 1,
+    profile_image_url TEXT,
+    bio TEXT,
+    room_level INTEGER NOT NULL DEFAULT 1,
+    total_assets DECIMAL(19, 2) NOT NULL DEFAULT 0,
+    current_background_code VARCHAR(2) NOT NULL DEFAULT '01',
+    current_character_code VARCHAR(3) NOT NULL DEFAULT '001',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_user_profile_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    CONSTRAINT fk_user_profile_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT chk_current_background_code CHECK (current_background_code IN ('01', '02')),
+    CONSTRAINT chk_current_character_code CHECK (current_character_code ~ '^(0[0-9][0-9]|1[0-7][0-9]|180)$')
 );
 
 -- 사용자 권한 테이블
