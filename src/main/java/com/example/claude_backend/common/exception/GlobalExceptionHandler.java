@@ -7,6 +7,8 @@ import com.example.claude_backend.domain.user.exception.FriendAlreadyExistsExcep
 import com.example.claude_backend.domain.user.exception.InvalidBackgroundCodeException;
 import com.example.claude_backend.domain.user.exception.InvalidCharacterCodeException;
 import com.example.claude_backend.domain.user.exception.UserNotFoundException;
+import com.example.claude_backend.domain.shop.exception.InsufficientAcornException;
+import com.example.claude_backend.domain.shop.exception.InvalidDrawTypeException;
 import com.example.claude_backend.presentation.api.v1.response.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
@@ -101,6 +103,26 @@ public class GlobalExceptionHandler {
 
     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
         .body(ApiResponse.error("CANNOT_ADD_SELF_AS_FRIEND", ex.getMessage()));
+  }
+
+  /** InsufficientAcornException 처리 */
+  @ExceptionHandler(InsufficientAcornException.class)
+  public ResponseEntity<ApiResponse<Void>> handleInsufficientAcornException(
+      InsufficientAcornException ex, WebRequest request) {
+    log.error("도토리가 부족합니다: {}", ex.getMessage());
+
+    return ResponseEntity.status(HttpStatus.CONFLICT)
+        .body(ApiResponse.error("INSUFFICIENT_ACORN", ex.getMessage()));
+  }
+
+  /** InvalidDrawTypeException 처리 */
+  @ExceptionHandler(InvalidDrawTypeException.class)
+  public ResponseEntity<ApiResponse<Void>> handleInvalidDrawTypeException(
+      InvalidDrawTypeException ex, WebRequest request) {
+    log.error("유효하지 않은 뽑기 타입: {}", ex.getMessage());
+
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(ApiResponse.error("INVALID_DRAW_TYPE", ex.getMessage()));
   }
 
   /** Validation 예외 처리 */
