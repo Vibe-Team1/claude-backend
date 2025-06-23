@@ -17,10 +17,9 @@ import org.hibernate.annotations.GenericGenerator;
  * @since 2025-01-20
  */
 @Entity
-@Table(
-    name = "accounts",
-    indexes = {@Index(name = "idx_accounts_user_id", columnList = "user_id")},
-    uniqueConstraints = {@UniqueConstraint(name = "uk_accounts_user_id", columnNames = "user_id")})
+@Table(name = "accounts", indexes = {
+    @Index(name = "idx_accounts_user_id", columnList = "user_id") }, uniqueConstraints = {
+        @UniqueConstraint(name = "uk_accounts_user_id", columnNames = "user_id") })
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -46,9 +45,37 @@ public class Account extends BaseTimeEntity {
   @Builder.Default
   private BigDecimal balance = BigDecimal.ZERO;
 
+  /** 도토리 */
+  @Column(nullable = false)
+  @Builder.Default
+  private Integer acorn = 5;
+
   /** 잔액 업데이트 */
   public void updateBalance(BigDecimal balance) {
     this.balance = balance;
+  }
+
+  /** 도토리 업데이트 */
+  public void updateAcorn(Integer acorn) {
+    this.acorn = acorn;
+  }
+
+  /** 도토리 증가 */
+  public void addAcorn(Integer amount) {
+    this.acorn += amount;
+  }
+
+  /** 도토리 감소 */
+  public void subtractAcorn(Integer amount) {
+    if (this.acorn < amount) {
+      throw new InsufficientBalanceException("도토리가 부족합니다.");
+    }
+    this.acorn -= amount;
+  }
+
+  /** 도토리 확인 */
+  public boolean hasSufficientAcorn(Integer amount) {
+    return this.acorn >= amount;
   }
 
   /** 잔액 증가 */

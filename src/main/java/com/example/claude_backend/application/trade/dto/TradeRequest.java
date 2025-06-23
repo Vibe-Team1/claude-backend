@@ -7,6 +7,7 @@ import lombok.Setter;
 @Setter
 public class TradeRequest {
   private String stockCode;
+  private String stockName;
   private Integer quantity;
   private Double price;
   private String tradeType; // BUY, SELL

@@ -134,12 +134,46 @@ public class AccountService {
     log.info("계좌 출금 완료 - 사용자 ID: {}, 출금 금액: {}", userId, amount);
   }
 
+  /** 도토리 조회 */
+  public Integer getAcorn(UUID userId) {
+    Account account = getUserAccount(userId);
+    return account.getAcorn();
+  }
+
+  /** 도토리 증가 */
+  @Transactional
+  public void addAcorn(UUID userId, Integer amount) {
+    Account account = getUserAccount(userId);
+    account.addAcorn(amount);
+    accountRepository.save(account);
+    log.info("도토리 증가 완료 - 사용자 ID: {}, 증가 수량: {}", userId, amount);
+  }
+
+  /** 도토리 감소 */
+  @Transactional
+  public void subtractAcorn(UUID userId, Integer amount) {
+    Account account = getUserAccount(userId);
+    if (!account.hasSufficientAcorn(amount)) {
+      throw new InsufficientBalanceException("도토리가 부족합니다.");
+    }
+    account.subtractAcorn(amount);
+    accountRepository.save(account);
+    log.info("도토리 감소 완료 - 사용자 ID: {}, 감소 수량: {}", userId, amount);
+  }
+
+  /** 도토리 충분 여부 확인 */
+  public boolean hasSufficientAcorn(UUID userId, Integer amount) {
+    Account account = getUserAccount(userId);
+    return account.hasSufficientAcorn(amount);
+  }
+
   /** Account를 AccountResponse로 변환 */
   private AccountResponse convertToAccountResponse(Account account) {
     return AccountResponse.builder()
         .accountId(account.getId())
         .userId(account.getUser().getId())
         .balance(account.getBalance())
+        .acorn(account.getAcorn())
         .createdAt(account.getCreatedAt())
         .updatedAt(account.getUpdatedAt())
         .build();

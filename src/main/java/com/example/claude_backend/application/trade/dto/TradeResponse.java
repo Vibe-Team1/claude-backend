@@ -16,4 +16,6 @@ public class TradeResponse {
   private String tradeType;
   private LocalDateTime tradeDate;
   private String status;
+  private Double profit;
+  private Integer acornReward;
 }

@@ -60,4 +60,35 @@ public class AccountController {
 
         return ResponseEntity.ok(ApiResponse.success("출금이 완료되었습니다."));
     }
+
+    /** 도토리 조회 */
+    @GetMapping("/acorn")
+    public ResponseEntity<ApiResponse<Integer>> getAcorn(Authentication authentication) {
+        UUID userId = SecurityUtil.getCurrentUserId();
+        Integer acorn = accountService.getAcorn(userId);
+
+        return ResponseEntity.ok(ApiResponse.success(acorn));
+    }
+
+    /** 도토리 증가 (관리자용) */
+    @PostMapping("/acorn/add")
+    public ResponseEntity<ApiResponse<String>> addAcorn(
+            @RequestParam Integer amount, Authentication authentication) {
+
+        UUID userId = SecurityUtil.getCurrentUserId();
+        accountService.addAcorn(userId, amount);
+
+        return ResponseEntity.ok(ApiResponse.success("도토리가 증가되었습니다."));
+    }
+
+    /** 도토리 감소 (관리자용) */
+    @PostMapping("/acorn/subtract")
+    public ResponseEntity<ApiResponse<String>> subtractAcorn(
+            @RequestParam Integer amount, Authentication authentication) {
+
+        UUID userId = SecurityUtil.getCurrentUserId();
+        accountService.subtractAcorn(userId, amount);
+
+        return ResponseEntity.ok(ApiResponse.success("도토리가 감소되었습니다."));
+    }
 }

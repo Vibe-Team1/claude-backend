@@ -29,7 +29,16 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
      * @param pageable 페이징 정보
      * @return 거래 목록
      */
-    Page<Trade> findByUserIdOrderByCreatedAtDesc(UUID userId, Pageable pageable);
+    Page<Trade> findByUserIdOrderByTimestampDesc(UUID userId, Pageable pageable);
+
+    /**
+     * 계좌별 거래 목록 조회
+     *
+     * @param accountId 계좌 ID
+     * @param pageable  페이징 정보
+     * @return 거래 목록
+     */
+    Page<Trade> findByAccountIdOrderByTimestampDesc(UUID accountId, Pageable pageable);
 
     /**
      * 사용자별 특정 주식 거래 목록 조회
@@ -39,7 +48,7 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
      * @param pageable 페이징 정보
      * @return 거래 목록
      */
-    Page<Trade> findByUserIdAndStockIdOrderByCreatedAtDesc(
+    Page<Trade> findByUserIdAndStockIdOrderByTimestampDesc(
             UUID userId, Long stockId, Pageable pageable);
 
     /**
@@ -50,19 +59,19 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
      * @param pageable  페이징 정보
      * @return 거래 목록
      */
-    Page<Trade> findByUserIdAndTradeTypeOrderByCreatedAtDesc(
+    Page<Trade> findByUserIdAndTradeTypeOrderByTimestampDesc(
             UUID userId, TradeType tradeType, Pageable pageable);
 
     /**
      * 사용자별 거래 상태별 거래 목록 조회
      *
-     * @param userId      사용자 ID
-     * @param tradeStatus 거래 상태
-     * @param pageable    페이징 정보
+     * @param userId   사용자 ID
+     * @param status   거래 상태
+     * @param pageable 페이징 정보
      * @return 거래 목록
      */
-    Page<Trade> findByUserIdAndTradeStatusOrderByCreatedAtDesc(
-            UUID userId, TradeStatus tradeStatus, Pageable pageable);
+    Page<Trade> findByUserIdAndStatusOrderByTimestampDesc(
+            UUID userId, TradeStatus status, Pageable pageable);
 
     /**
      * 사용자별 완료된 거래 목록 조회
@@ -70,7 +79,7 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
      * @param userId 사용자 ID
      * @return 완료된 거래 목록
      */
-    List<Trade> findByUserIdAndTradeStatusOrderByCreatedAtDesc(UUID userId, TradeStatus tradeStatus);
+    List<Trade> findByUserIdAndStatusOrderByTimestampDesc(UUID userId, TradeStatus status);
 
     /**
      * 특정 기간 동안의 사용자 거래 목록 조회
@@ -81,8 +90,8 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
      * @return 거래 목록
      */
     @Query("SELECT t FROM Trade t WHERE t.user.id = :userId "
-            + "AND t.createdAt BETWEEN :startDate AND :endDate "
-            + "ORDER BY t.createdAt DESC")
+            + "AND t.timestamp BETWEEN :startDate AND :endDate "
+            + "ORDER BY t.timestamp DESC")
     List<Trade> findByUserIdAndDateRange(
             @Param("userId") UUID userId,
             @Param("startDate") LocalDateTime startDate,
@@ -97,7 +106,16 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
     @Query("SELECT COUNT(t) as totalTrades, "
             + "SUM(CASE WHEN t.tradeType = 'BUY' THEN 1 ELSE 0 END) as buyCount, "
             + "SUM(CASE WHEN t.tradeType = 'SELL' THEN 1 ELSE 0 END) as sellCount, "
-            + "SUM(CASE WHEN t.tradeStatus = 'COMPLETED' THEN 1 ELSE 0 END) as completedCount "
+            + "SUM(CASE WHEN t.status = 'COMPLETED' THEN 1 ELSE 0 END) as completedCount "
             + "FROM Trade t WHERE t.user.id = :userId")
     Object[] getTradeStatistics(@Param("userId") UUID userId);
+
+    /**
+     * 주식별 거래 목록 조회
+     *
+     * @param stockId  주식 ID
+     * @param pageable 페이징 정보
+     * @return 거래 목록
+     */
+    Page<Trade> findByStockIdOrderByTimestampDesc(Long stockId, Pageable pageable);
 }

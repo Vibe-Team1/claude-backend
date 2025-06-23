@@ -12,6 +12,7 @@ public class AccountResponse {
   private UUID accountId;
   private UUID userId;
   private BigDecimal balance;
+  private Integer acorn;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
 }

@@ -1,5 +1,6 @@
 package com.example.claude_backend.presentation.api.v1;
 
+import com.example.claude_backend.application.trade.dto.PortfolioResponse;
 import com.example.claude_backend.application.trade.dto.TradeRequest;
 import com.example.claude_backend.application.trade.dto.TradeResponse;
 import com.example.claude_backend.application.trade.service.TradeService;
@@ -46,5 +47,15 @@ public class TradeController {
     List<TradeResponse> history = tradeService.getStockTradeHistory(stockCode);
 
     return ResponseEntity.ok(ApiResponse.success(history));
+  }
+
+  @GetMapping("/portfolio")
+  public ResponseEntity<ApiResponse<PortfolioResponse>> getPortfolio(
+      Authentication authentication) {
+
+    UUID userId = SecurityUtil.getCurrentUserId();
+    PortfolioResponse portfolio = tradeService.getPortfolio(userId);
+
+    return ResponseEntity.ok(ApiResponse.success(portfolio));
   }
 }

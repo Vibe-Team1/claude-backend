@@ -88,71 +88,69 @@ VALUES
 -- ===== 새로 추가된 도메인 샘플 데이터 =====
 
 -- 계좌 데이터 생성
-INSERT INTO accounts (user_id, balance)
+INSERT INTO accounts (user_id, balance, acorn)
 VALUES 
-    ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid, 100000000), -- 관리자: 1억원
-    ('b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22'::uuid, 10000000),  -- 사용자1: 1천만원
-    ('c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33'::uuid, 50000000)   -- 사용자2: 5천만원
+    ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid, 100000000, 10), -- 관리자: 1억원, 10개 도토리
+    ('b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22'::uuid, 10000000, 5),   -- 사용자1: 1천만원, 5개 도토리
+    ('c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33'::uuid, 50000000, 8)    -- 사용자2: 5천만원, 8개 도토리
 ON CONFLICT (user_id) DO NOTHING;
 
--- 주식 데이터 생성 (대표적인 한국 주식들)
-INSERT INTO stocks (ticker, name, current_price, per, pbr, trade_date, trade_time)
-VALUES 
-    ('005930', '삼성전자', 75000.00, 15.2, 1.8, CURRENT_DATE, CURRENT_TIME),
-    ('000660', 'SK하이닉스', 120000.00, 25.5, 2.1, CURRENT_DATE, CURRENT_TIME),
-    ('035420', 'NAVER', 180000.00, 35.8, 4.2, CURRENT_DATE, CURRENT_TIME),
-    ('051910', 'LG화학', 450000.00, 18.9, 2.5, CURRENT_DATE, CURRENT_TIME),
-    ('006400', '삼성SDI', 380000.00, 22.1, 3.1, CURRENT_DATE, CURRENT_TIME),
-    ('035720', '카카오', 45000.00, 45.2, 1.9, CURRENT_DATE, CURRENT_TIME),
-    ('207940', '삼성바이오로직스', 850000.00, 65.8, 8.9, CURRENT_DATE, CURRENT_TIME),
-    ('068270', '셀트리온', 180000.00, 28.5, 3.2, CURRENT_DATE, CURRENT_TIME),
-    ('323410', '카카오뱅크', 25000.00, 12.5, 1.2, CURRENT_DATE, CURRENT_TIME),
-    ('373220', 'LG에너지솔루션', 420000.00, 55.2, 4.8, CURRENT_DATE, CURRENT_TIME)
-ON CONFLICT (ticker) DO NOTHING;
+-- 주식 데이터 생성 (대표적인 한국 주식들) - 프론트엔드에서 주식 정보를 전달하므로 주석 처리
+-- INSERT INTO stocks (ticker, name, current_price, per, pbr, trade_date, trade_time) VALUES
+-- ('005930', '삼성전자', 75000.00, 15.2, 1.8, CURRENT_DATE, CURRENT_TIME),
+-- ('000660', 'SK하이닉스', 120000.00, 12.5, 2.1, CURRENT_DATE, CURRENT_TIME),
+-- ('035420', 'NAVER', 180000.00, 25.3, 3.2, CURRENT_DATE, CURRENT_TIME),
+-- ('051910', 'LG화학', 450000.00, 18.7, 2.5, CURRENT_DATE, CURRENT_TIME),
+-- ('006400', '삼성SDI', 380000.00, 22.1, 2.8, CURRENT_DATE, CURRENT_TIME),
+-- ('035720', '카카오', 55000.00, 30.5, 4.1, CURRENT_DATE, CURRENT_TIME),
+-- ('207940', '삼성바이오로직스', 850000.00, 45.2, 6.8, CURRENT_DATE, CURRENT_TIME),
+-- ('068270', '셀트리온', 180000.00, 28.9, 3.7, CURRENT_DATE, CURRENT_TIME),
+-- ('323410', '카카오뱅크', 28000.00, 12.8, 1.9, CURRENT_DATE, CURRENT_TIME),
+-- ('373220', 'LG에너지솔루션', 420000.00, 35.6, 4.2, CURRENT_DATE, CURRENT_TIME)
+-- ON CONFLICT (ticker) DO NOTHING;
 
--- 사용자 보유 주식 데이터 생성
-INSERT INTO user_stocks (user_id, stock_id, quantity, average_price)
-SELECT 
-    'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22'::uuid, -- 주식초보자
-    s.id,
-    10, -- 10주씩 보유
-    s.current_price * 0.95 -- 평균 매수가 (현재가의 95%)
-FROM stocks s 
-WHERE s.ticker IN ('005930', '035420', '035720') -- 삼성전자, NAVER, 카카오
-ON CONFLICT (user_id, stock_id) DO NOTHING;
+-- 사용자 보유 주식 데이터 생성 - 주식 데이터가 없으므로 주석 처리
+-- INSERT INTO user_stocks (user_id, stock_id, quantity, average_price)
+-- SELECT 
+--     'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22'::uuid, -- 주식초보자
+--     s.id,
+--     10, -- 10주씩 보유
+--     s.current_price * 0.95 -- 평균 매수가 (현재가의 95%)
+-- FROM stocks s 
+-- WHERE s.ticker IN ('005930', '035420', '035720') -- 삼성전자, NAVER, 카카오
+-- ON CONFLICT (user_id, stock_id) DO NOTHING;
 
-INSERT INTO user_stocks (user_id, stock_id, quantity, average_price)
-SELECT 
-    'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33'::uuid, -- 투자고수
-    s.id,
-    CASE 
-        WHEN s.ticker = '005930' THEN 50  -- 삼성전자 50주
-        WHEN s.ticker = '000660' THEN 30  -- SK하이닉스 30주
-        WHEN s.ticker = '051910' THEN 20  -- LG화학 20주
-        WHEN s.ticker = '207940' THEN 10  -- 삼성바이오로직스 10주
-        ELSE 15
-    END,
-    s.current_price * 0.92 -- 평균 매수가 (현재가의 92%)
-FROM stocks s 
-WHERE s.ticker IN ('005930', '000660', '051910', '207940', '068270')
-ON CONFLICT (user_id, stock_id) DO NOTHING;
+-- INSERT INTO user_stocks (user_id, stock_id, quantity, average_price)
+-- SELECT 
+--     'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33'::uuid, -- 투자고수
+--     s.id,
+--     CASE 
+--         WHEN s.ticker = '005930' THEN 50  -- 삼성전자 50주
+--         WHEN s.ticker = '000660' THEN 30  -- SK하이닉스 30주
+--         WHEN s.ticker = '051910' THEN 20  -- LG화학 20주
+--         WHEN s.ticker = '207940' THEN 10  -- 삼성바이오로직스 10주
+--         ELSE 15
+--     END,
+--     s.current_price * 0.92 -- 평균 매수가 (현재가의 92%)
+-- FROM stocks s 
+-- WHERE s.ticker IN ('005930', '000660', '051910', '207940', '068270')
+-- ON CONFLICT (user_id, stock_id) DO NOTHING;
 
--- 거래 데이터 생성 (최근 거래 내역)
-INSERT INTO trades (trade_id, account_id, ticker, price, quantity, timestamp, type, status)
-SELECT 
-    'TRADE_' || EXTRACT(EPOCH FROM NOW())::BIGINT || '_' || ROW_NUMBER() OVER (),
-    a.id,
-    s.ticker,
-    s.current_price,
-    us.quantity,
-    NOW() - INTERVAL '1 day' * (ROW_NUMBER() OVER () % 30), -- 최근 30일 내 거래
-    'BUY',
-    'COMPLETED'
-FROM accounts a
-JOIN user_stocks us ON a.user_id = us.user_id
-JOIN stocks s ON us.stock_id = s.id
-WHERE a.user_id IN ('b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22'::uuid, 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33'::uuid)
-ON CONFLICT (trade_id) DO NOTHING;
+-- 거래 데이터 생성 (최근 거래 내역) - 주식 데이터가 없으므로 주석 처리
+-- INSERT INTO trades (user_id, account_id, stock_id, price, quantity, trade_type, status, timestamp)
+-- SELECT 
+--     a.user_id,
+--     a.id,
+--     s.id,
+--     s.current_price,
+--     us.quantity,
+--     'BUY',
+--     'COMPLETED',
+--     NOW() - INTERVAL '1 day' * (ROW_NUMBER() OVER () % 30) -- 최근 30일 내 거래
+-- FROM accounts a
+-- JOIN user_stocks us ON a.user_id = us.user_id
+-- JOIN stocks s ON us.stock_id = s.id
+-- WHERE a.user_id IN ('b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22'::uuid, 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33'::uuid);
 
 -- 테스트용 사용자 데이터 (이미 있다면 무시)
 INSERT INTO users (id, google_sub, email, nickname, status, created_at, updated_at)
