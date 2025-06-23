@@ -1,7 +1,9 @@
 package com.example.claude_backend.common.exception;
 
 import com.example.claude_backend.domain.user.exception.BackgroundAlreadyOwnedException;
+import com.example.claude_backend.domain.user.exception.CannotAddSelfAsFriendException;
 import com.example.claude_backend.domain.user.exception.CharacterAlreadyOwnedException;
+import com.example.claude_backend.domain.user.exception.FriendAlreadyExistsException;
 import com.example.claude_backend.domain.user.exception.InvalidBackgroundCodeException;
 import com.example.claude_backend.domain.user.exception.InvalidCharacterCodeException;
 import com.example.claude_backend.domain.user.exception.UserNotFoundException;
@@ -79,6 +81,26 @@ public class GlobalExceptionHandler {
 
     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
         .body(ApiResponse.error("INVALID_CHARACTER_CODE", ex.getMessage()));
+  }
+
+  /** FriendAlreadyExistsException 처리 */
+  @ExceptionHandler(FriendAlreadyExistsException.class)
+  public ResponseEntity<ApiResponse<Void>> handleFriendAlreadyExistsException(
+      FriendAlreadyExistsException ex, WebRequest request) {
+    log.error("이미 친구 관계가 존재합니다: {}", ex.getMessage());
+
+    return ResponseEntity.status(HttpStatus.CONFLICT)
+        .body(ApiResponse.error("FRIEND_ALREADY_EXISTS", ex.getMessage()));
+  }
+
+  /** CannotAddSelfAsFriendException 처리 */
+  @ExceptionHandler(CannotAddSelfAsFriendException.class)
+  public ResponseEntity<ApiResponse<Void>> handleCannotAddSelfAsFriendException(
+      CannotAddSelfAsFriendException ex, WebRequest request) {
+    log.error("자신을 친구로 추가할 수 없습니다: {}", ex.getMessage());
+
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(ApiResponse.error("CANNOT_ADD_SELF_AS_FRIEND", ex.getMessage()));
   }
 
   /** Validation 예외 처리 */

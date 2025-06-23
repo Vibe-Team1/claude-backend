@@ -177,6 +177,22 @@ CREATE TABLE IF NOT EXISTS user_characters (
 CREATE INDEX IF NOT EXISTS idx_user_characters_user_id ON user_characters(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_characters_character_code ON user_characters(character_code);
 
+-- 사용자 친구 테이블
+CREATE TABLE IF NOT EXISTS user_friends (
+    id BIGSERIAL PRIMARY KEY,
+    user_id UUID NOT NULL,
+    friend_id UUID NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_user_friend_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_user_friend_friend FOREIGN KEY (friend_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT uk_user_friend UNIQUE (user_id, friend_id)
+);
+
+-- 사용자 친구 인덱스
+CREATE INDEX IF NOT EXISTS idx_user_friends_user_id ON user_friends(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_friends_friend_id ON user_friends(friend_id);
+
 -- 업데이트 시간 자동 갱신 함수
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -216,3 +232,6 @@ CREATE TRIGGER update_user_backgrounds_updated_at BEFORE UPDATE
 
 CREATE TRIGGER update_user_characters_updated_at BEFORE UPDATE
     ON user_characters FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_user_friends_updated_at BEFORE UPDATE
+    ON user_friends FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
