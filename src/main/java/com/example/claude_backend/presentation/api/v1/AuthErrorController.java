@@ -10,10 +10,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/auth")
 public class AuthErrorController {
 
-    @GetMapping("/error")
-    public ResponseEntity<ApiResponse<String>> authError() {
-        return ResponseEntity
-                .status(401)
-                .body(ApiResponse.error("AUTH_ERROR", "인증에 실패했습니다. 다시 로그인 해주세요."));
-    }
+  @GetMapping("/error")
+  public ResponseEntity<ApiResponse<String>> authError() {
+    return ResponseEntity.status(401)
+        .body(ApiResponse.error("AUTH_ERROR", "인증에 실패했습니다. 다시 로그인 해주세요."));
+  }
 }

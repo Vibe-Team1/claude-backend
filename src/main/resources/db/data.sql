@@ -85,10 +85,90 @@ VALUES
     ('c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33'::uuid, 'ROLE_PREMIUM')
     ON CONFLICT (user_id, role_name) DO NOTHING;
 
--- 시퀀스 리셋 (필요한 경우)
--- SELECT setval('users_id_seq', (SELECT MAX(id) FROM users));
+-- ===== 새로 추가된 도메인 샘플 데이터 =====
 
--- 통계 확인용 쿼리 (주석 처리)
+-- 계좌 데이터 생성
+INSERT INTO accounts (user_id, balance)
+VALUES 
+    ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid, 100000000), -- 관리자: 1억원
+    ('b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22'::uuid, 10000000),  -- 사용자1: 1천만원
+    ('c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33'::uuid, 50000000)   -- 사용자2: 5천만원
+ON CONFLICT (user_id) DO NOTHING;
+
+-- 주식 데이터 생성 (대표적인 한국 주식들)
+INSERT INTO stocks (ticker, name, current_price, per, pbr, trade_date, trade_time)
+VALUES 
+    ('005930', '삼성전자', 75000.00, 15.2, 1.8, CURRENT_DATE, CURRENT_TIME),
+    ('000660', 'SK하이닉스', 120000.00, 25.5, 2.1, CURRENT_DATE, CURRENT_TIME),
+    ('035420', 'NAVER', 180000.00, 35.8, 4.2, CURRENT_DATE, CURRENT_TIME),
+    ('051910', 'LG화학', 450000.00, 18.9, 2.5, CURRENT_DATE, CURRENT_TIME),
+    ('006400', '삼성SDI', 380000.00, 22.1, 3.1, CURRENT_DATE, CURRENT_TIME),
+    ('035720', '카카오', 45000.00, 45.2, 1.9, CURRENT_DATE, CURRENT_TIME),
+    ('207940', '삼성바이오로직스', 850000.00, 65.8, 8.9, CURRENT_DATE, CURRENT_TIME),
+    ('068270', '셀트리온', 180000.00, 28.5, 3.2, CURRENT_DATE, CURRENT_TIME),
+    ('323410', '카카오뱅크', 25000.00, 12.5, 1.2, CURRENT_DATE, CURRENT_TIME),
+    ('373220', 'LG에너지솔루션', 420000.00, 55.2, 4.8, CURRENT_DATE, CURRENT_TIME)
+ON CONFLICT (ticker) DO NOTHING;
+
+-- 사용자 보유 주식 데이터 생성
+INSERT INTO user_stocks (user_id, stock_id, quantity, average_price)
+SELECT 
+    'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22'::uuid, -- 주식초보자
+    s.id,
+    10, -- 10주씩 보유
+    s.current_price * 0.95 -- 평균 매수가 (현재가의 95%)
+FROM stocks s 
+WHERE s.ticker IN ('005930', '035420', '035720') -- 삼성전자, NAVER, 카카오
+ON CONFLICT (user_id, stock_id) DO NOTHING;
+
+INSERT INTO user_stocks (user_id, stock_id, quantity, average_price)
+SELECT 
+    'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33'::uuid, -- 투자고수
+    s.id,
+    CASE 
+        WHEN s.ticker = '005930' THEN 50  -- 삼성전자 50주
+        WHEN s.ticker = '000660' THEN 30  -- SK하이닉스 30주
+        WHEN s.ticker = '051910' THEN 20  -- LG화학 20주
+        WHEN s.ticker = '207940' THEN 10  -- 삼성바이오로직스 10주
+        ELSE 15
+    END,
+    s.current_price * 0.92 -- 평균 매수가 (현재가의 92%)
+FROM stocks s 
+WHERE s.ticker IN ('005930', '000660', '051910', '207940', '068270')
+ON CONFLICT (user_id, stock_id) DO NOTHING;
+
+-- 거래 데이터 생성 (최근 거래 내역)
+INSERT INTO trades (trade_id, account_id, ticker, price, quantity, timestamp, type, status)
+SELECT 
+    'TRADE_' || EXTRACT(EPOCH FROM NOW())::BIGINT || '_' || ROW_NUMBER() OVER (),
+    a.id,
+    s.ticker,
+    s.current_price,
+    us.quantity,
+    NOW() - INTERVAL '1 day' * (ROW_NUMBER() OVER () % 30), -- 최근 30일 내 거래
+    'BUY',
+    'COMPLETED'
+FROM accounts a
+JOIN user_stocks us ON a.user_id = us.user_id
+JOIN stocks s ON us.stock_id = s.id
+WHERE a.user_id IN ('b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22'::uuid, 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33'::uuid)
+ON CONFLICT (trade_id) DO NOTHING;
+
+-- 테스트용 사용자 데이터 (이미 있다면 무시)
+INSERT INTO users (id, google_sub, email, nickname, status, created_at, updated_at)
+VALUES 
+    ('550e8400-e29b-41d4-a716-446655440000', 'test_google_sub_1', 'test1@example.com', 'testuser1', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('550e8400-e29b-41d4-a716-446655440001', 'test_google_sub_2', 'test2@example.com', 'testuser2', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+ON CONFLICT (google_sub) DO NOTHING;
+
+-- 테스트용 OAuth 토큰 데이터
+INSERT INTO oauth_tokens (id, user_id, provider, access_token, refresh_token, expires_at, created_at, updated_at)
+VALUES 
+    ('660e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440000', 'GOOGLE', 'test_access_token_1', 'test_refresh_token_1', CURRENT_TIMESTAMP + INTERVAL '1 day', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('660e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440001', 'GOOGLE', 'test_access_token_2', 'test_refresh_token_2', CURRENT_TIMESTAMP + INTERVAL '1 day', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+ON CONFLICT (id) DO NOTHING;
+
+-- ===== 통계 확인용 쿼리 =====
 
 SELECT
     'Total Users' as metric,
@@ -105,19 +185,19 @@ SELECT
     'Admin Users' as metric,
     COUNT(DISTINCT user_id) as count
 FROM user_roles
-WHERE role_name = 'ROLE_ADMIN';
-
--- 테스트용 사용자 데이터 (이미 있다면 무시)
-INSERT INTO users (id, google_sub, email, nickname, status, created_at, updated_at)
-VALUES 
-    ('550e8400-e29b-41d4-a716-446655440000', 'test_google_sub_1', 'test1@example.com', 'testuser1', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    ('550e8400-e29b-41d4-a716-446655440001', 'test_google_sub_2', 'test2@example.com', 'testuser2', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-ON CONFLICT (google_sub) DO NOTHING;
-
--- 테스트용 OAuth 토큰 데이터
-INSERT INTO oauth_tokens (id, user_id, provider, access_token, refresh_token, expires_at, created_at, updated_at)
-VALUES 
-    ('660e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440000', 'GOOGLE', 'test_access_token_1', 'test_refresh_token_1', CURRENT_TIMESTAMP + INTERVAL '1 day', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    ('660e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440001', 'GOOGLE', 'test_access_token_2', 'test_refresh_token_2', CURRENT_TIMESTAMP + INTERVAL '1 day', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-ON CONFLICT (id) DO NOTHING;
-*/
+WHERE role_name = 'ROLE_ADMIN'
+UNION ALL
+SELECT
+    'Total Stocks' as metric,
+    COUNT(*) as count
+FROM stocks
+UNION ALL
+SELECT
+    'Total Accounts' as metric,
+    COUNT(*) as count
+FROM accounts
+UNION ALL
+SELECT
+    'Total Trades' as metric,
+    COUNT(*) as count
+FROM trades;
