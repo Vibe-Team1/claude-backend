@@ -86,6 +86,7 @@ public class SecurityConfig {
                                         "/actuator/health",
                                         "/api/v1/public/**",
                                         "/api/v1/test/**", // test
+                                        "/api/v1/users/search", // 임시로 사용자 검색 API 공개
                                         "/auth/success",
                                         "/api/v1/auth/error")
                                 .permitAll()

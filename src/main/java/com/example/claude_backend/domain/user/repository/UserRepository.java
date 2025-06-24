@@ -1,6 +1,7 @@
 package com.example.claude_backend.domain.user.repository;
 
 import com.example.claude_backend.domain.user.entity.User;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -75,6 +76,14 @@ public interface UserRepository {
    * @return 존재 여부
    */
   boolean existsByNickname(String nickname);
+
+  /**
+   * 닉네임으로 사용자 검색 (부분 일치)
+   *
+   * @param nickname 검색할 닉네임 (부분 일치)
+   * @return 사용자 목록
+   */
+  List<User> findByNicknameContainingIgnoreCase(String nickname);
 
   /**
    * 사용자 삭제

@@ -1,11 +1,10 @@
 package com.example.claude_backend.application.user.dto;
 
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.UUID;
 
 @Getter
 @NoArgsConstructor
@@ -13,6 +12,6 @@ import java.util.UUID;
 @Builder
 public class SimpleUserResponse {
 
-    private UUID userId;
-    private String nickname;
+  private UUID userId;
+  private String nickname;
 }

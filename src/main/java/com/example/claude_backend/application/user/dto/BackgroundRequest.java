@@ -7,7 +7,7 @@ import lombok.Getter;
 @Getter
 public class BackgroundRequest {
 
-    @NotBlank(message = "배경 코드는 필수입니다")
-    @Pattern(regexp = "^(01|02)$", message = "배경 코드는 '01' 또는 '02'여야 합니다")
-    private String backgroundCode;
+  @NotBlank(message = "배경 코드는 필수입니다")
+  @Pattern(regexp = "^(01|02)$", message = "배경 코드는 '01' 또는 '02'여야 합니다")
+  private String backgroundCode;
 }

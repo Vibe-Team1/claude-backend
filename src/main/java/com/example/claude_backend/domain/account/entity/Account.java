@@ -17,9 +17,10 @@ import org.hibernate.annotations.GenericGenerator;
  * @since 2025-01-20
  */
 @Entity
-@Table(name = "accounts", indexes = {
-    @Index(name = "idx_accounts_user_id", columnList = "user_id") }, uniqueConstraints = {
-        @UniqueConstraint(name = "uk_accounts_user_id", columnNames = "user_id") })
+@Table(
+    name = "accounts",
+    indexes = {@Index(name = "idx_accounts_user_id", columnList = "user_id")},
+    uniqueConstraints = {@UniqueConstraint(name = "uk_accounts_user_id", columnNames = "user_id")})
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

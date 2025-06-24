@@ -81,6 +81,12 @@ public class User extends BaseTimeEntity {
   @JsonManagedReference
   private Set<UserStock> userStocks = new HashSet<>();
 
+  /** 사용자 보유 캐릭터 (1:N 관계) */
+  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+  @Builder.Default
+  @JsonManagedReference
+  private Set<UserCharacter> userCharacters = new HashSet<>();
+
   /** 닉네임 변경 */
   public void updateNickname(String nickname) {
     this.nickname = nickname;
@@ -120,6 +126,14 @@ public class User extends BaseTimeEntity {
     this.userStocks.add(userStock);
     if (userStock.getUser() != this) {
       userStock.setUser(this);
+    }
+  }
+
+  /** 보유 캐릭터 추가 */
+  public void addUserCharacter(UserCharacter userCharacter) {
+    this.userCharacters.add(userCharacter);
+    if (userCharacter.getUser() != this) {
+      userCharacter.setUser(this);
     }
   }
 

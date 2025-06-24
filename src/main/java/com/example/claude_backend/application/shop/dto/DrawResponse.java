@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class DrawResponse {
 
-    private String characterCode;
-    private boolean isNew;
+  private String characterCode;
+  private boolean isNew;
 }

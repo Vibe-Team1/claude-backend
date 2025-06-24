@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class CustomizationSelectResponse {
 
-    private String message;
-    private String backgroundCode;
-    private String characterCode;
+  private String message;
+  private String backgroundCode;
+  private String characterCode;
 }

@@ -9,13 +9,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface TradeService {
-    TradeResponse executeTrade(TradeRequest request, UUID userId);
+  TradeResponse executeTrade(TradeRequest request, UUID userId);
 
-    List<TradeResponse> getUserTradeHistory(UUID userId);
+  List<TradeResponse> getUserTradeHistory(UUID userId);
 
-    List<TradeResponse> getStockTradeHistory(String stockCode);
+  List<TradeResponse> getStockTradeHistory(String stockCode);
 
-    Page<TradeResponse> getUserTradeHistoryPaged(UUID userId, Pageable pageable);
+  Page<TradeResponse> getUserTradeHistoryPaged(UUID userId, Pageable pageable);
 
-    PortfolioResponse getPortfolio(UUID userId);
+  PortfolioResponse getPortfolio(UUID userId);
 }

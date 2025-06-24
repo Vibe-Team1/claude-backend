@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class DrawRequest {
 
-    @NotNull(message = "뽑기 타입은 필수입니다")
-    private String type; // NORMAL, PREMIUM, SUPREME
+  @NotNull(message = "뽑기 타입은 필수입니다")
+  private String type; // NORMAL, PREMIUM, SUPREME
 }

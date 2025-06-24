@@ -29,12 +29,13 @@ public class SwaggerConfig {
   @Bean
   public OpenAPI openAPI() {
     // JWT 보안 스키마 정의
-    SecurityScheme securityScheme = new SecurityScheme()
-        .type(SecurityScheme.Type.HTTP)
-        .scheme("bearer")
-        .bearerFormat("JWT")
-        .in(SecurityScheme.In.HEADER)
-        .name("Authorization");
+    SecurityScheme securityScheme =
+        new SecurityScheme()
+            .type(SecurityScheme.Type.HTTP)
+            .scheme("bearer")
+            .bearerFormat("JWT")
+            .in(SecurityScheme.In.HEADER)
+            .name("Authorization");
 
     // 보안 요구사항
     SecurityRequirement securityRequirement = new SecurityRequirement().addList("bearerAuth");

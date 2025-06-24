@@ -31,9 +31,10 @@ public class AccountService {
   /** 잔액 차감 */
   @Transactional
   public void deductBalance(UUID accountId, BigDecimal amount) {
-    Account account = accountRepository
-        .findById(accountId)
-        .orElseThrow(() -> new IllegalArgumentException("계좌를 찾을 수 없습니다: " + accountId));
+    Account account =
+        accountRepository
+            .findById(accountId)
+            .orElseThrow(() -> new IllegalArgumentException("계좌를 찾을 수 없습니다: " + accountId));
 
     account.subtractBalance(amount);
     accountRepository.save(account);
@@ -43,9 +44,10 @@ public class AccountService {
   /** 잔액 증가 */
   @Transactional
   public void addBalance(UUID accountId, BigDecimal amount) {
-    Account account = accountRepository
-        .findById(accountId)
-        .orElseThrow(() -> new IllegalArgumentException("계좌를 찾을 수 없습니다: " + accountId));
+    Account account =
+        accountRepository
+            .findById(accountId)
+            .orElseThrow(() -> new IllegalArgumentException("계좌를 찾을 수 없습니다: " + accountId));
 
     account.addBalance(amount);
     accountRepository.save(account);
@@ -71,17 +73,19 @@ public class AccountService {
 
   /** 잔액 조회 */
   public BigDecimal getBalance(UUID accountId) {
-    Account account = accountRepository
-        .findById(accountId)
-        .orElseThrow(() -> new IllegalArgumentException("계좌를 찾을 수 없습니다: " + accountId));
+    Account account =
+        accountRepository
+            .findById(accountId)
+            .orElseThrow(() -> new IllegalArgumentException("계좌를 찾을 수 없습니다: " + accountId));
     return account.getBalance();
   }
 
   /** 잔액 충분 여부 확인 */
   public boolean hasSufficientBalance(UUID accountId, BigDecimal amount) {
-    Account account = accountRepository
-        .findById(accountId)
-        .orElseThrow(() -> new IllegalArgumentException("계좌를 찾을 수 없습니다: " + accountId));
+    Account account =
+        accountRepository
+            .findById(accountId)
+            .orElseThrow(() -> new IllegalArgumentException("계좌를 찾을 수 없습니다: " + accountId));
     return account.hasSufficientBalance(amount);
   }
 
@@ -101,8 +105,10 @@ public class AccountService {
   /** 사용자 계좌 생성 */
   @Transactional
   public AccountResponse createAccountForUser(UUID userId, Double initialBalance) {
-    User user = userRepository.findById(userId)
-        .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
+    User user =
+        userRepository
+            .findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
 
     // 이미 계좌가 있는지 확인
     if (accountRepository.findByUserId(userId).isPresent()) {

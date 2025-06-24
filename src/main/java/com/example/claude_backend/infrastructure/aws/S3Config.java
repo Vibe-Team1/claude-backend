@@ -10,5 +10,5 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class S3Config {
-        // AWS 설정은 application.yml에서 관리
+  // AWS 설정은 application.yml에서 관리
 }

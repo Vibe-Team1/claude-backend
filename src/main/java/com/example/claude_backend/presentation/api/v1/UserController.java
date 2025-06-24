@@ -1,6 +1,7 @@
 package com.example.claude_backend.presentation.api.v1;
 
 import com.example.claude_backend.application.user.dto.UserResponse;
+import com.example.claude_backend.application.user.dto.UserSearchResponse;
 import com.example.claude_backend.application.user.dto.UserStockResponse;
 import com.example.claude_backend.application.user.dto.UserUpdateRequest;
 import com.example.claude_backend.application.user.service.UserService;
@@ -107,16 +108,19 @@ public class UserController {
   /**
    * 사용자 검색
    *
-   * @param query 검색어 (닉네임)
+   * @param nickname 검색할 닉네임
    * @return 검색 결과
    */
   @GetMapping("/search")
-  @Operation(summary = "사용자 검색", description = "닉네임으로 사용자를 검색합니다.")
-  public ResponseEntity<ApiResponse<Object>> searchUsers(@RequestParam String query) {
-    log.debug("사용자 검색 요청: {}", query);
+  @Operation(
+      summary = "사용자 검색",
+      description = "닉네임으로 사용자를 검색합니다. 닉네임, 현재 캐릭터, 계좌 잔액, 보유 캐릭터 개수를 반환합니다.")
+  public ResponseEntity<ApiResponse<List<UserSearchResponse>>> searchUsers(
+      @RequestParam String nickname) {
+    log.debug("사용자 검색 요청: {}", nickname);
 
-    // TODO: 검색 기능 구현
-    return ResponseEntity.ok(ApiResponse.success(Map.of("message", "검색 기능은 추후 구현 예정입니다.")));
+    List<UserSearchResponse> results = userService.searchUsersByNickname(nickname);
+    return ResponseEntity.ok(ApiResponse.success(results));
   }
 
   /** 사용자 보유 주식 조회 */
