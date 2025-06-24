@@ -88,12 +88,14 @@ public class SwaggerConfig {
 
   /** 서버 목록 설정 */
   private List<Server> getServers() {
+    Server finlandServer = new Server().url("http://finland.r-e.kr:8080").description("Finland 서버");
+
     Server localServer = new Server().url("http://localhost:8080").description("로컬 개발 서버");
 
     Server devServer = new Server().url("https://dev.stockroom-sns.com").description("개발 서버");
 
     Server prodServer = new Server().url("https://api.stockroom-sns.com").description("프로덕션 서버");
 
-    return List.of(localServer, devServer, prodServer);
+    return List.of(finlandServer, localServer, devServer, prodServer);
   }
 }

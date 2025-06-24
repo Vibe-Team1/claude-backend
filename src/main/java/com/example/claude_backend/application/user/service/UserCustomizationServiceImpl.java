@@ -17,6 +17,7 @@ import com.example.claude_backend.domain.user.exception.InvalidCharacterCodeExce
 import com.example.claude_backend.domain.user.repository.UserBackgroundRepository;
 import com.example.claude_backend.domain.user.repository.UserCharacterRepository;
 import com.example.claude_backend.domain.user.repository.UserRepository;
+import com.example.claude_backend.infrastructure.aws.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -34,15 +36,28 @@ public class UserCustomizationServiceImpl implements UserCustomizationService {
     private final UserBackgroundRepository userBackgroundRepository;
     private final UserCharacterRepository userCharacterRepository;
     private final UserRepository userRepository;
+    private final S3Service s3Service;
 
     @Override
     public UserCustomizationResponse getUserCustomization(UUID userId) {
         List<String> backgrounds = userBackgroundRepository.findBackgroundCodesByUserId(userId);
         List<String> characters = userCharacterRepository.findCharacterCodesByUserId(userId);
 
+        // 배경 URL 목록 생성
+        List<String> backgroundUrls = backgrounds.stream()
+                .map(s3Service::getBackgroundUrl)
+                .collect(Collectors.toList());
+
+        // 캐릭터 URL 목록 생성
+        List<String> characterUrls = characters.stream()
+                .map(s3Service::getCharacterUrl)
+                .collect(Collectors.toList());
+
         return UserCustomizationResponse.builder()
                 .backgrounds(backgrounds)
                 .characters(characters)
+                .backgroundUrls(backgroundUrls)
+                .characterUrls(characterUrls)
                 .build();
     }
 
@@ -130,22 +145,16 @@ public class UserCustomizationServiceImpl implements UserCustomizationService {
                 userId, user.getProfile().getCurrentBackgroundCode(), user.getProfile().getCurrentCharacterCode());
 
         return CustomizationSelectResponse.builder()
-                .message("Customization updated")
-                .currentBackground(user.getProfile().getCurrentBackgroundCode())
-                .currentCharacter(user.getProfile().getCurrentCharacterCode())
+                .backgroundCode(user.getProfile().getCurrentBackgroundCode())
+                .characterCode(user.getProfile().getCurrentCharacterCode())
                 .build();
     }
 
     private boolean isValidBackgroundCode(String backgroundCode) {
-        return "01".equals(backgroundCode) || "02".equals(backgroundCode);
+        return backgroundCode != null && backgroundCode.matches("^(01|02)$");
     }
 
     private boolean isValidCharacterCode(String characterCode) {
-        try {
-            int code = Integer.parseInt(characterCode);
-            return code >= 1 && code <= 180;
-        } catch (NumberFormatException e) {
-            return false;
-        }
+        return characterCode != null && characterCode.matches("^(0[0-9][0-9]|1[0-7][0-9]|180)$");
     }
 }

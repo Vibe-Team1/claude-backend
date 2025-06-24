@@ -32,24 +32,24 @@ public class S3Service {
     }
 
     /**
-     * 맵 파일의 URL을 생성합니다.
+     * 배경 파일의 URL을 생성합니다.
      *
-     * @param mapName 맵 이름
-     * @return 맵 파일 URL
+     * @param backgroundCode 배경 코드 (예: "01")
+     * @return 배경 파일 URL
      */
-    public String getMapUrl(String mapName) {
-        log.debug("맵 파일 URL 생성. mapName: {}", mapName);
-        return getObjectUrl("maps/" + mapName + ".json");
+    public String getBackgroundUrl(String backgroundCode) {
+        log.debug("배경 파일 URL 생성. backgroundCode: {}", backgroundCode);
+        return getObjectUrl("map/" + backgroundCode + ".png");
     }
 
     /**
      * 캐릭터 파일의 URL을 생성합니다.
      *
-     * @param characterName 캐릭터 이름
+     * @param characterCode 캐릭터 코드 (예: "001")
      * @return 캐릭터 파일 URL
      */
-    public String getCharacterUrl(String characterName) {
-        log.debug("캐릭터 파일 URL 생성. characterName: {}", characterName);
-        return getObjectUrl("characters/" + characterName + ".png");
+    public String getCharacterUrl(String characterCode) {
+        log.debug("캐릭터 파일 URL 생성. characterCode: {}", characterCode);
+        return getObjectUrl("char/" + characterCode + ".gif");
     }
 }

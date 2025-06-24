@@ -36,21 +36,21 @@ public class S3Controller {
         return ResponseEntity.ok(ApiResponse.success(url));
     }
 
-    @Operation(summary = "맵 파일 URL 생성", description = "맵 파일의 S3 URL을 생성합니다.")
-    @GetMapping("/map-url")
-    public ResponseEntity<ApiResponse<String>> getMapUrl(@RequestParam String mapName) {
-        log.debug("맵 파일 URL 생성 요청. mapName: {}", mapName);
+    @Operation(summary = "배경 파일 URL 생성", description = "배경 파일의 S3 URL을 생성합니다.")
+    @GetMapping("/background-url")
+    public ResponseEntity<ApiResponse<String>> getBackgroundUrl(@RequestParam String backgroundCode) {
+        log.debug("배경 파일 URL 생성 요청. backgroundCode: {}", backgroundCode);
 
-        String url = s3Service.getMapUrl(mapName);
+        String url = s3Service.getBackgroundUrl(backgroundCode);
         return ResponseEntity.ok(ApiResponse.success(url));
     }
 
     @Operation(summary = "캐릭터 파일 URL 생성", description = "캐릭터 파일의 S3 URL을 생성합니다.")
     @GetMapping("/character-url")
-    public ResponseEntity<ApiResponse<String>> getCharacterUrl(@RequestParam String characterName) {
-        log.debug("캐릭터 파일 URL 생성 요청. characterName: {}", characterName);
+    public ResponseEntity<ApiResponse<String>> getCharacterUrl(@RequestParam String characterCode) {
+        log.debug("캐릭터 파일 URL 생성 요청. characterCode: {}", characterCode);
 
-        String url = s3Service.getCharacterUrl(characterName);
+        String url = s3Service.getCharacterUrl(characterCode);
         return ResponseEntity.ok(ApiResponse.success(url));
     }
 }
