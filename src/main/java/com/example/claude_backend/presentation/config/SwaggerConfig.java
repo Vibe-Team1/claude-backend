@@ -29,13 +29,12 @@ public class SwaggerConfig {
   @Bean
   public OpenAPI openAPI() {
     // JWT 보안 스키마 정의
-    SecurityScheme securityScheme =
-        new SecurityScheme()
-            .type(SecurityScheme.Type.HTTP)
-            .scheme("bearer")
-            .bearerFormat("JWT")
-            .in(SecurityScheme.In.HEADER)
-            .name("Authorization");
+    SecurityScheme securityScheme = new SecurityScheme()
+        .type(SecurityScheme.Type.HTTP)
+        .scheme("bearer")
+        .bearerFormat("JWT")
+        .in(SecurityScheme.In.HEADER)
+        .name("Authorization");
 
     // 보안 요구사항
     SecurityRequirement securityRequirement = new SecurityRequirement().addList("bearerAuth");
@@ -55,6 +54,11 @@ public class SwaggerConfig {
             """
                 StockRoomSNS - SNS형 모의투자 서비스 API
 
+                ## API 버전
+                현재 API 버전: v1
+                - 모든 API 엔드포인트는 `/api/v1/`로 시작합니다
+                - 향후 v2, v3 버전 확장 예정
+
                 ## 주요 기능
                 - Google OAuth2 로그인
                 - 사용자 프로필 관리
@@ -66,6 +70,12 @@ public class SwaggerConfig {
                 1. Google OAuth2로 로그인
                 2. 발급받은 JWT 토큰을 Authorization 헤더에 포함
                    `Authorization: Bearer {token}`
+
+                ## API 엔드포인트 예시
+                - 사용자 정보: `/api/v1/users/me`
+                - 친구 목록: `/api/v1/friends`
+                - 상점 뽑기: `/api/v1/shop/draw`
+                - 커스터마이제이션: `/api/v1/user/customization`
                 """)
         .version("v1.0.0")
         .contact(

@@ -24,7 +24,7 @@ import java.util.UUID;
 @Slf4j
 @Tag(name = "User Customization", description = "사용자 커스터마이제이션 API")
 @RestController
-@RequestMapping("/api/user/customization")
+@RequestMapping("/api/v1/user/customization")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
 public class UserCustomizationController {

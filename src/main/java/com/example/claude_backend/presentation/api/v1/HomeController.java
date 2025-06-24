@@ -24,7 +24,8 @@ public class HomeController {
             "auth_error", "/api/v1/auth/error",
             "auth_success", "/auth/success",
             "auth_token", "/auth/token",
-            "oauth2_google", "/oauth2/authorization/google"));
+            "oauth2_google", "/oauth2/authorization/google",
+            "api_v1_base", "/api/v1"));
 
     return ResponseEntity.ok(ApiResponse.success(data));
   }
