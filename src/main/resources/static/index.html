@@ -196,8 +196,8 @@
             resultDiv.className = 'result';
             resultDiv.textContent = 'Google OAuth2 로그인을 시작합니다...\n리디렉션 후 이 페이지로 돌아와주세요.';
 
-            // Google OAuth2 로그인 URL로 리디렉션
-            window.location.href = '/oauth2/authorization/google';
+            // Google OAuth2 로그인 URL로 리디렉션 (백엔드 서버 주소 사용)
+            window.location.href = 'http://finland.r-e.kr:8080/oauth2/authorization/google';
         }
 
         // URL에서 토큰 정보 확인
@@ -282,7 +282,7 @@
                 const formData = new FormData();
                 formData.append('refreshToken', refreshToken);
 
-                const response = await fetch('/api/v1/auth/refresh', {
+                const response = await fetch('http://finland.r-e.kr:8080/api/v1/auth/refresh', {
                     method: 'POST',
                     body: formData
                 });
@@ -330,7 +330,7 @@
                 const formData = new FormData();
                 formData.append('accessToken', accessToken);
 
-                const response = await fetch('/api/v1/auth/verify', {
+                const response = await fetch('http://finland.r-e.kr:8080/api/v1/auth/verify', {
                     method: 'POST',
                     body: formData
                 });
@@ -367,7 +367,7 @@
                 resultDiv.className = 'result';
                 resultDiv.textContent = '사용자 정보 조회 중...';
 
-                const response = await fetch('/api/v1/users/me', {
+                const response = await fetch('http://finland.r-e.kr:8080/api/v1/users/me', {
                     method: 'GET',
                     headers: {
                         'Authorization': 'Bearer ' + accessToken,
@@ -399,7 +399,7 @@
                 resultDiv.className = 'result';
                 resultDiv.textContent = '주식 목록 조회 중...';
 
-                const response = await fetch('/api/v1/stocks', {
+                const response = await fetch('http://finland.r-e.kr:8080/api/v1/stocks', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'

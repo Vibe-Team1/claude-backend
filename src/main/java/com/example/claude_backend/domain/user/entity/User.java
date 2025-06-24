@@ -17,17 +17,14 @@ import org.hibernate.annotations.GenericGenerator;
  * @since 2025-01-20
  */
 @Entity
-@Table(
-    name = "users",
-    indexes = {
-      @Index(name = "idx_users_email", columnList = "email"),
-      @Index(name = "idx_users_google_sub", columnList = "google_sub"),
-      @Index(name = "idx_users_nickname", columnList = "nickname")
-    },
-    uniqueConstraints = {
-      @UniqueConstraint(name = "uk_users_email", columnNames = "email"),
-      @UniqueConstraint(name = "uk_users_google_sub", columnNames = "google_sub")
-    })
+@Table(name = "users", indexes = {
+    @Index(name = "idx_users_email", columnList = "email"),
+    @Index(name = "idx_users_google_sub", columnList = "google_sub"),
+    @Index(name = "idx_users_nickname", columnList = "nickname")
+}, uniqueConstraints = {
+    @UniqueConstraint(name = "uk_users_email", columnNames = "email"),
+    @UniqueConstraint(name = "uk_users_google_sub", columnNames = "google_sub")
+})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -65,7 +62,7 @@ public class User extends BaseTimeEntity {
   private UserProfile profile;
 
   /** 사용자 권한 (1:N 관계) */
-  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
   @Builder.Default
   @JsonManagedReference
   private Set<UserRole> roles = new HashSet<>();

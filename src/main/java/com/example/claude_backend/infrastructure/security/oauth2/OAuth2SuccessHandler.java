@@ -66,8 +66,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     if (oauthTokenOpt.isPresent()) {
       OAuthToken oauthToken = oauthTokenOpt.get();
 
-      // 프론트엔드로 리디렉션하면서 토큰을 쿼리 파라미터로 전달
-      String targetUrl = determineTargetUrl(request, response, authentication, oauthToken);
+      // accessToken만 쿼리 파라미터로 전달
+      String targetUrl = frontendOAuthSuccessUrl + "?status=success&access_token=" + oauthToken.getAccessToken();
 
       log.debug("프론트엔드로 리디렉션: {}", targetUrl);
 

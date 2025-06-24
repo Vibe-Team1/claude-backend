@@ -45,11 +45,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 토큰에서 사용자 ID 추출
         UUID userId = jwtTokenProvider.getUserIdFromToken(token);
 
-        // 사용자 정보 로드
-        User user = userService.getUserEntityById(userId);
+        // 사용자 정보 로드 (트랜잭션 내에서 처리)
+        User user = userService.getUserEntityWithRolesById(userId);
 
         if (user != null) {
-          // OAuth2UserPrincipal 생성
+          // OAuth2UserPrincipal 생성 (roles 컬렉션이 이미 로드된 상태)
           OAuth2UserPrincipal principal = OAuth2UserPrincipal.create(user);
 
           // 인증 객체 생성

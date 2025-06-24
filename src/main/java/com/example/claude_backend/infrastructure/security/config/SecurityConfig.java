@@ -109,37 +109,27 @@ public class SecurityConfig {
         @Bean
         public CorsConfigurationSource corsConfigurationSource() {
                 CorsConfiguration configuration = new CorsConfiguration();
-
-                // 허용할 Origin 설정
-                configuration.setAllowedOriginPatterns(List.of("*"));
-
-                // 허용할 HTTP 메서드 설정
-                configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-
-                // 허용할 헤더 설정
-                configuration.setAllowedHeaders(Arrays.asList(
-                                "Authorization",
-                                "Content-Type",
-                                "X-Requested-With",
-                                "Accept",
-                                "Origin",
-                                "Access-Control-Request-Method",
-                                "Access-Control-Request-Headers"));
-
-                // 노출할 헤더 설정
-                configuration.setExposedHeaders(Arrays.asList(
-                                "Authorization",
-                                "Content-Type"));
-
-                // 인증 정보 포함 허용
+                // 프론트엔드 주소들 허용 (IP와 도메인 모두 포함)
+                configuration.setAllowedOrigins(List.of(
+                                "http://15.164.70.242",
+                                "http://43.200.225.0",
+                                "http://finland.r-e.kr",
+                                "http://localhost:3000",
+                                "http://localhost:5173"));
+                // 와일드카드 패턴도 허용 (개발 환경용)
+                configuration.setAllowedOriginPatterns(List.of(
+                                "http://15.164.70.242:*",
+                                "http://43.200.225.0:*",
+                                "http://finland.r-e.kr:*",
+                                "http://localhost:*"));
+                configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+                configuration.setAllowedHeaders(Arrays.asList("*"));
+                configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type", "Set-Cookie"));
                 configuration.setAllowCredentials(true);
-
-                // Preflight 요청 캐시 시간 (1시간)
                 configuration.setMaxAge(3600L);
 
                 UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
                 source.registerCorsConfiguration("/**", configuration);
-
                 return source;
         }
 }

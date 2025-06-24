@@ -54,6 +54,23 @@ public class UserController {
   }
 
   /**
+   * 닉네임으로 다른 사용자 정보 조회
+   *
+   * @param nickname 조회할 사용자의 닉네임
+   * @return 다른 사용자의 공개 정보
+   */
+  @GetMapping("/others")
+  @Operation(summary = "다른 사용자 정보 조회", description = "닉네임으로 다른 사용자의 공개 정보를 조회합니다.")
+  public ResponseEntity<ApiResponse<UserMeResponse>> getOtherUser(
+      @RequestParam String nickname) {
+    log.debug("다른 사용자 정보 조회 요청. 닉네임: {}", nickname);
+
+    UserMeResponse user = userService.getOtherUserInfoByNickname(nickname);
+
+    return ResponseEntity.ok(ApiResponse.success(user));
+  }
+
+  /**
    * 현재 사용자 정보 수정
    *
    * @param request 수정 요청 정보

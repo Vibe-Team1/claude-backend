@@ -87,6 +87,14 @@ public interface UserService {
   User getUserEntityById(UUID userId);
 
   /**
+   * 사용자 Entity 조회 (roles 포함, 인증용)
+   *
+   * @param userId 사용자 ID
+   * @return 사용자 Entity (roles가 로드된 상태)
+   */
+  User getUserEntityWithRolesById(UUID userId);
+
+  /**
    * 사용자 보유 주식 조회
    *
    * @param userId 사용자 ID
@@ -101,4 +109,12 @@ public interface UserService {
    * @return 검색 결과 목록
    */
   List<UserSearchResponse> searchUsersByNickname(String nickname);
+
+  /**
+   * 닉네임으로 다른 사용자 정보 조회 (공개 정보)
+   *
+   * @param nickname 조회할 사용자의 닉네임
+   * @return 다른 사용자의 공개 정보
+   */
+  UserMeResponse getOtherUserInfoByNickname(String nickname);
 }

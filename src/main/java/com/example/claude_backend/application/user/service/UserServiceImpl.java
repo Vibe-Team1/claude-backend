@@ -148,6 +148,19 @@ public class UserServiceImpl implements UserService {
     return userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
   }
 
+  /**
+   * 사용자 Entity 조회 (roles 포함, 인증용)
+   * 
+   * @param userId 사용자 ID
+   * @return 사용자 Entity (roles가 로드된 상태)
+   */
+  public User getUserEntityWithRolesById(UUID userId) {
+    User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
+    // roles 컬렉션을 명시적으로 로드
+    user.getRoles().size(); // 컬렉션을 초기화하여 지연 로딩 방지
+    return user;
+  }
+
   /** 사용자 보유 주식 조회 */
   @Override
   public List<UserStockResponse> getUserStocks(UUID userId) {
@@ -177,6 +190,55 @@ public class UserServiceImpl implements UserService {
 
     log.debug("검색 결과: {}건", results.size());
     return results;
+  }
+
+  /** 닉네임으로 다른 사용자 정보 조회 (공개 정보) */
+  @Override
+  public UserMeResponse getOtherUserInfoByNickname(String nickname) {
+    log.debug("다른 사용자 정보 조회 시작. 닉네임: {}", nickname);
+
+    if (nickname == null || nickname.trim().isEmpty()) {
+      throw new IllegalArgumentException("닉네임은 필수입니다.");
+    }
+
+    // 닉네임으로 사용자 조회
+    User user = userRepository.findByNickname(nickname.trim())
+        .orElseThrow(() -> new UserNotFoundException("닉네임 '" + nickname + "'을 가진 사용자를 찾을 수 없습니다."));
+
+    // 계좌 정보 조회
+    var account = accountService.getUserAccount(user.getId());
+
+    // 보유 캐릭터 코드 목록 조회
+    List<String> characterCodes = userCharacterRepository.findByUserId(user.getId())
+        .stream()
+        .map(UserCharacter::getCharacterCode)
+        .collect(Collectors.toList());
+
+    // UserProfile 정보 (null 체크 포함)
+    UserProfile profile = user.getProfile();
+
+    return UserMeResponse.builder()
+        // users 테이블 정보
+        .userId(user.getId())
+        .email(user.getEmail())
+        .nickname(user.getNickname())
+        .status(user.getStatus().name())
+
+        // user_profiles 테이블 정보
+        .currentCharacterCode(profile != null ? profile.getCurrentCharacterCode() : "001")
+        .currentBackgroundCode(profile != null ? profile.getCurrentBackgroundCode() : "01")
+        .profileImageUrl(profile != null ? profile.getProfileImageUrl() : null)
+        .bio(profile != null ? profile.getBio() : null)
+        .totalAssets(profile != null ? profile.getTotalAssets() : 10000000L)
+        .roomLevel(profile != null ? profile.getRoomLevel() : 1)
+
+        // accounts 테이블 정보
+        .balance(account.getBalance())
+        .acorn(account.getAcorn())
+
+        // user_characters 테이블 정보
+        .characterCodes(characterCodes)
+        .build();
   }
 
   /** 신규 사용자 생성 */
