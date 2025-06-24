@@ -5,9 +5,18 @@ import com.example.claude_backend.application.user.service.UserService;
 import com.example.claude_backend.common.util.SecurityUtil;
 import com.example.claude_backend.domain.oauth.entity.OAuthToken;
 import com.example.claude_backend.domain.user.entity.User;
+import com.example.claude_backend.infrastructure.security.jwt.JwtTokenProvider;
 import com.example.claude_backend.presentation.api.v1.response.ApiResponse;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +33,7 @@ public class AuthSuccessController {
 
   private final UserService userService;
   private final OAuthTokenService oauthTokenService;
+  private final JwtTokenProvider jwtTokenProvider;
 
   @GetMapping("/success")
   public ResponseEntity<ApiResponse<Map<String, Object>>> authSuccess() {
@@ -126,5 +136,151 @@ public class AuthSuccessController {
       return ResponseEntity.badRequest()
           .body(ApiResponse.error("TOKEN_ERROR", "토큰 정보 조회 중 오류가 발생했습니다: " + e.getMessage()));
     }
+  }
+
+  /**
+   * Refresh Token을 사용하여 새로운 Access Token 발급
+   * 
+   * @param refreshToken 리프레시 토큰
+   * @return 새로운 액세스 토큰과 리프레시 토큰
+   */
+  @PostMapping("/refresh")
+  public ResponseEntity<ApiResponse<Map<String, String>>> refreshToken(
+      @RequestParam String refreshToken) {
+
+    log.info("토큰 갱신 요청 - Refresh Token: {}", refreshToken.substring(0, Math.min(20, refreshToken.length())) + "...");
+
+    try {
+      // Refresh Token으로 사용자 ID 추출
+      UUID userId = jwtTokenProvider.getUserIdFromToken(refreshToken);
+
+      // 최신 토큰 정보 조회
+      Optional<OAuthToken> oauthTokenOpt = oauthTokenService.findLatestTokenByUserId(userId);
+
+      if (oauthTokenOpt.isPresent()) {
+        OAuthToken oauthToken = oauthTokenOpt.get();
+
+        // 저장된 Refresh Token과 일치하는지 확인
+        if (!refreshToken.equals(oauthToken.getRefreshToken())) {
+          log.warn("Refresh Token 불일치 - 사용자 ID: {}", userId);
+          return ResponseEntity.badRequest()
+              .body(ApiResponse.error("INVALID_REFRESH_TOKEN", "Invalid refresh token"));
+        }
+
+        // 새로운 토큰 생성
+        String newAccessToken = jwtTokenProvider.createToken(userId);
+        String newRefreshToken = jwtTokenProvider.createRefreshToken(userId);
+
+        // Access Token 만료 시간 계산
+        Date accessTokenExpiry = jwtTokenProvider.getTokenExpiry(newAccessToken);
+        LocalDateTime expiresAt = accessTokenExpiry.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+
+        // 토큰 정보 업데이트
+        oauthTokenService.saveToken(oauthToken.getUser(), "GOOGLE", newAccessToken, newRefreshToken, expiresAt);
+
+        // Response Body에 토큰 포함
+        Map<String, String> tokenResponse = new HashMap<>();
+        tokenResponse.put("access_token", newAccessToken);
+        tokenResponse.put("refresh_token", newRefreshToken);
+        tokenResponse.put("user_id", userId.toString());
+
+        log.info("토큰 갱신 성공 - 사용자 ID: {}", userId);
+
+        return ResponseEntity.ok(ApiResponse.success(tokenResponse));
+
+      } else {
+        log.warn("사용자 {}의 토큰 정보를 찾을 수 없습니다.", userId);
+        return ResponseEntity.badRequest()
+            .body(ApiResponse.error("TOKEN_NOT_FOUND", "Token not found"));
+      }
+
+    } catch (Exception e) {
+      log.error("토큰 갱신 중 오류 발생", e);
+      return ResponseEntity.badRequest()
+          .body(ApiResponse.error("REFRESH_ERROR", "Token refresh failed"));
+    }
+  }
+
+  /**
+   * 현재 토큰 상태 확인
+   * 
+   * @param accessToken 액세스 토큰
+   * @return 토큰 유효성 및 사용자 정보
+   */
+  @PostMapping("/verify")
+  public ResponseEntity<ApiResponse<Map<String, Object>>> verifyToken(
+      @RequestParam String accessToken) {
+
+    log.info("토큰 검증 요청");
+
+    try {
+      // 토큰 유효성 검증
+      if (!jwtTokenProvider.validateToken(accessToken)) {
+        return ResponseEntity.badRequest()
+            .body(ApiResponse.error("INVALID_TOKEN", "Invalid token"));
+      }
+
+      // 사용자 ID 추출
+      UUID userId = jwtTokenProvider.getUserIdFromToken(accessToken);
+
+      // 토큰 정보 조회
+      Optional<OAuthToken> oauthTokenOpt = oauthTokenService.findLatestTokenByUserId(userId);
+
+      if (oauthTokenOpt.isPresent()) {
+        OAuthToken oauthToken = oauthTokenOpt.get();
+
+        Map<String, Object> verificationResponse = new HashMap<>();
+        verificationResponse.put("valid", true);
+        verificationResponse.put("user_id", userId.toString());
+        verificationResponse.put("user_email", oauthToken.getUser().getEmail());
+
+        return ResponseEntity.ok(ApiResponse.success(verificationResponse));
+
+      } else {
+        return ResponseEntity.badRequest()
+            .body(ApiResponse.error("TOKEN_NOT_FOUND", "Token not found"));
+      }
+
+    } catch (Exception e) {
+      log.error("토큰 검증 중 오류 발생", e);
+      return ResponseEntity.badRequest()
+          .body(ApiResponse.error("VERIFICATION_ERROR", "Token verification failed"));
+    }
+  }
+
+  /** 쿠키 조회 */
+  private Optional<Cookie> getCookie(HttpServletRequest request, String name) {
+    Cookie[] cookies = request.getCookies();
+
+    if (cookies != null) {
+      for (Cookie cookie : cookies) {
+        if (name.equals(cookie.getName())) {
+          return Optional.of(cookie);
+        }
+      }
+    }
+
+    return Optional.empty();
+  }
+
+  /** 토큰을 쿠키에 설정 */
+  private void setTokenCookies(HttpServletResponse response, String accessToken, String refreshToken) {
+    // Access Token 쿠키 설정
+    Cookie accessTokenCookie = new Cookie("access_token", accessToken);
+    accessTokenCookie.setPath("/");
+    accessTokenCookie.setHttpOnly(true);
+    accessTokenCookie.setSecure(false); // 개발환경에서는 false, 프로덕션에서는 true
+    accessTokenCookie.setMaxAge(7 * 24 * 3600); // 7일
+
+    response.addCookie(accessTokenCookie);
+
+    // Refresh Token 쿠키 설정
+    Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
+    refreshTokenCookie.setPath("/");
+    refreshTokenCookie.setHttpOnly(true);
+    refreshTokenCookie.setSecure(false); // 개발환경에서는 false, 프로덕션에서는 true
+    refreshTokenCookie.setMaxAge(21 * 24 * 3600); // 21일
+
+    response.addCookie(refreshTokenCookie);
   }
 }

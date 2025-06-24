@@ -5,6 +5,7 @@ import com.example.claude_backend.application.user.dto.UserResponse;
 import com.example.claude_backend.application.user.dto.UserSearchResponse;
 import com.example.claude_backend.application.user.dto.UserStockResponse;
 import com.example.claude_backend.application.user.dto.UserUpdateRequest;
+import com.example.claude_backend.application.user.dto.UserMeResponse;
 import com.example.claude_backend.application.user.mapper.UserMapper;
 import com.example.claude_backend.domain.user.entity.User;
 import com.example.claude_backend.domain.user.entity.UserBackground;
@@ -280,6 +281,50 @@ public class UserServiceImpl implements UserService {
         .totalValue(totalValue)
         .profitLoss(profitLoss)
         .profitLossRate(profitLossRate)
+        .build();
+  }
+
+  /** 현재 로그인한 사용자의 모든 정보 조회 */
+  @Override
+  public UserMeResponse getCurrentUserInfo(UUID userId) {
+    log.debug("현재 사용자 모든 정보 조회 시작. ID: {}", userId);
+
+    // 사용자 기본 정보 조회
+    User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
+
+    // 계좌 정보 조회
+    var account = accountService.getUserAccount(userId);
+
+    // 보유 캐릭터 코드 목록 조회
+    List<String> characterCodes = userCharacterRepository.findByUserId(userId)
+        .stream()
+        .map(UserCharacter::getCharacterCode)
+        .collect(Collectors.toList());
+
+    // UserProfile 정보 (null 체크 포함)
+    UserProfile profile = user.getProfile();
+
+    return UserMeResponse.builder()
+        // users 테이블 정보
+        .userId(user.getId())
+        .email(user.getEmail())
+        .nickname(user.getNickname())
+        .status(user.getStatus().name())
+
+        // user_profiles 테이블 정보
+        .currentCharacterCode(profile != null ? profile.getCurrentCharacterCode() : "001")
+        .currentBackgroundCode(profile != null ? profile.getCurrentBackgroundCode() : "01")
+        .profileImageUrl(profile != null ? profile.getProfileImageUrl() : null)
+        .bio(profile != null ? profile.getBio() : null)
+        .totalAssets(profile != null ? profile.getTotalAssets() : 10000000L)
+        .roomLevel(profile != null ? profile.getRoomLevel() : 1)
+
+        // accounts 테이블 정보
+        .balance(account.getBalance())
+        .acorn(account.getAcorn())
+
+        // user_characters 테이블 정보
+        .characterCodes(characterCodes)
         .build();
   }
 }

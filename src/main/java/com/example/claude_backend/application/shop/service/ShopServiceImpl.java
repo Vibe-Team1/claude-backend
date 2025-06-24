@@ -38,10 +38,9 @@ public class ShopServiceImpl implements ShopService {
     }
 
     // 계정 조회
-    Account account =
-        accountRepository
-            .findByUserId(userId)
-            .orElseThrow(() -> new RuntimeException("계정을 찾을 수 없습니다: " + userId));
+    Account account = accountRepository
+        .findByUserId(userId)
+        .orElseThrow(() -> new RuntimeException("계정을 찾을 수 없습니다: " + userId));
 
     // 도토리 잔액 확인
     if (account.getAcorn() < type.getCost()) {
@@ -57,8 +56,7 @@ public class ShopServiceImpl implements ShopService {
     // 새로운 캐릭터인 경우 저장
     if (isNew) {
       User user = account.getUser();
-      UserCharacter userCharacter =
-          UserCharacter.builder().user(user).characterCode(characterCode).build();
+      UserCharacter userCharacter = UserCharacter.builder().user(user).characterCode(characterCode).build();
       userCharacterRepository.save(userCharacter);
       log.info("새로운 캐릭터 획득. userId: {}, characterCode: {}", userId, characterCode);
     } else {
@@ -90,7 +88,7 @@ public class ShopServiceImpl implements ShopService {
   private enum DrawType {
     NORMAL(5, 1, 120),
     PREMIUM(10, 121, 180),
-    SUPREME(20, 150, 180);
+    SUPREME(20, 151, 180);
 
     private final int cost;
     private final int minCode;

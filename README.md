@@ -1,107 +1,211 @@
-# StockRoom SNS Backend
+# Claude Backend
 
-PostgreSQL 기반 모의 주식 거래 시스템 백엔드 프로젝트
+실시간 한국투자증권 API 연동 기반 주식 거래 및 소셜 기능을 제공하는 Spring Boot 백엔드 애플리케이션입니다.
 
-##  주요 기능
+## 🚀 주요 기능
 
-- **OAuth2 로그인**: Google OAuth2를 통한 사용자 인증
-- **JWT 인증**: JWT 토큰 기반 API 인증
-- **사용자 관리**: 프로필, 커스터마이제이션, 친구 시스템
-- **계좌 관리**: 잔액, 도토리 시스템
-- **주식 거래**: 모의 주식 매수/매도
-- **상점 시스템**: 캐릭터 뽑기 (도토리 사용)
-- **커스터마이제이션**: 배경, 캐릭터 선택
-
-##  API 버전 관리
-
-### 현재 버전: v1
-- 모든 API 엔드포인트는 `/api/v1/`로 시작
-- 향후 v2, v3 버전 확장 예정
-
-### 주요 API 엔드포인트
-
-#### 인증
-- `GET /api/v1/auth/error` - 인증 오류
-- `GET /auth/success` - OAuth2 로그인 성공
-- `GET /auth/token` - 토큰 정보
-
-#### 사용자 관리
-- `GET /api/v1/users/me` - 내 정보 조회
-- `PATCH /api/v1/users/me` - 내 정보 수정
-- `GET /api/v1/users/{userId}` - 사용자 조회
-- `GET /api/v1/users/check-nickname` - 닉네임 중복 확인
-- `GET /api/v1/users/search` - 사용자 검색
-- `GET /api/v1/users/stocks` - 보유 주식 조회
-
-#### 친구 시스템
-- `GET /api/v1/users` - 전체 사용자 목록
-- `GET /api/v1/friends` - 친구 목록 조회
-- `POST /api/v1/friends` - 친구 추가
-
-#### 계좌 관리
-- `GET /api/v1/accounts` - 계좌 정보 조회
-- `POST /api/v1/accounts` - 계좌 생성
-- `POST /api/v1/accounts/deposit` - 입금
-- `POST /api/v1/accounts/withdraw` - 출금
-- `GET /api/v1/accounts/acorn` - 도토리 조회
-- `POST /api/v1/accounts/acorn/add` - 도토리 증가
-- `POST /api/v1/accounts/acorn/subtract` - 도토리 감소
-
-#### 주식 거래
-- `GET /api/v1/stocks` - 전체 주식 목록
-- `GET /api/v1/stocks/{stockCode}` - 주식 상세 정보
-- `GET /api/v1/stocks/search` - 주식 검색
-- `GET /api/v1/stocks/sector/{sector}` - 섹터별 주식
-- `POST /api/v1/trades` - 주식 거래
-- `GET /api/v1/trades/history` - 거래 내역
-- `GET /api/v1/trades/portfolio` - 포트폴리오
-
-#### 상점 시스템
-- `POST /api/v1/shop/draw` - 캐릭터 뽑기
-
-#### 커스터마이제이션
-- `GET /api/v1/user/customization` - 커스터마이제이션 조회
-- `POST /api/v1/user/customization/background` - 배경 추가
-- `POST /api/v1/user/customization/character` - 캐릭터 추가
-- `PATCH /api/v1/user/customization/select` - 커스터마이제이션 선택
+- **Google OAuth2 로그인**: JWT 토큰 기반 인증
+- **실시간 주식 데이터**: 한국투자증권 API 연동
+- **주식 거래**: 매수/매도 기능
+- **사용자 커스터마이징**: 캐릭터, 배경 변경
+- **친구 시스템**: 사용자 간 친구 추가/삭제
+- **상점 시스템**: 도토리로 아이템 구매
 
 ## 🛠 기술 스택
 
-- **Java 21**
-- **Spring Boot 3.2**
-- **Spring Security + OAuth2**
-- **Spring Data JPA**
-- **PostgreSQL**
-- **Gradle**
-- **Swagger/OpenAPI 3.0**
+- **Framework**: Spring Boot 3.2.x
+- **Language**: Java 17
+- **Database**: H2 (개발), MySQL (운영)
+- **Security**: Spring Security, OAuth2, JWT
+- **API Documentation**: Swagger/OpenAPI 3
+- **Build Tool**: Gradle
+- **Cloud**: AWS S3 (파일 저장)
 
-## 📚 API 문서
+## 📋 API 문서
 
-- Swagger UI: `http://localhost:8080/swagger-ui.html`
-- OpenAPI JSON: `http://localhost:8080/v3/api-docs`
+- **Swagger UI**: `http://localhost:8080/swagger-ui.html`
+- **OpenAPI JSON**: `http://localhost:8080/v3/api-docs`
+
+## 🔐 인증 시스템
+
+### OAuth2 로그인 플로우
+
+1. **로그인 시작**: `GET /oauth2/authorization/google`
+2. **Google OAuth2 인증**: Google 로그인 페이지로 리디렉션
+3. **인증 성공**: 프론트엔드로 리디렉션하면서 토큰 전달
+   ```
+   http://15.164.70.242/oauth-success?status=success&access_token=xxx&refresh_token=yyy&user_id=zzz
+   ```
+
+### 토큰 관리
+
+- **Access Token**: 7일 유효 (Authorization 헤더 사용)
+- **Refresh Token**: 21일 유효 (토큰 갱신용)
+
+### API 인증
+
+```bash
+# Authorization 헤더에 Bearer 토큰 포함
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+     http://localhost:8080/api/v1/users/me
+```
+
+### 토큰 갱신
+
+```bash
+# Refresh Token으로 새로운 Access Token 발급
+curl -X POST "http://localhost:8080/api/v1/auth/refresh" \
+     -d "refreshToken=YOUR_REFRESH_TOKEN"
+```
+
+## 🏃‍♂️ 실행 방법
+
+### 1. 환경 설정
+
+```bash
+# application-local.yml 설정
+spring:
+  profiles:
+    active: local
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+```
+
+### 2. 애플리케이션 실행
+
+```bash
+# Gradle로 실행
+./gradlew bootRun
+
+# 또는 JAR 파일로 실행
+./gradlew build
+java -jar build/libs/claude-backend-0.0.1-SNAPSHOT.jar
+```
+
+### 3. 테스트 페이지 접속
+
+- **테스트 페이지**: `http://localhost:8080/`
+- **H2 콘솔**: `http://localhost:8080/h2-console`
+
+## 📊 주요 API 엔드포인트
+
+### 인증 관련
+- `GET /oauth2/authorization/google` - Google OAuth2 로그인
+- `POST /api/v1/auth/refresh` - 토큰 갱신
+- `POST /api/v1/auth/verify` - 토큰 검증
+
+### 사용자 관련
+- `GET /api/v1/users/me` - 현재 사용자 정보
+- `PUT /api/v1/users/{id}` - 사용자 정보 수정
+- `GET /api/v1/users/search` - 사용자 검색
+
+### 주식 관련
+- `GET /api/v1/stocks` - 주식 목록 조회
+- `GET /api/v1/stocks/{code}` - 주식 상세 정보
+- `POST /api/v1/trades` - 주식 거래 (매수/매도)
+- `GET /api/v1/trades/portfolio` - 포트폴리오 조회
+
+### 상점 관련
+- `POST /api/v1/shop/draw` - 뽑기 (캐릭터/배경)
+- `GET /api/v1/shop/characters` - 보유 캐릭터 목록
+- `GET /api/v1/shop/backgrounds` - 보유 배경 목록
 
 ## 🔧 개발 환경 설정
 
-1. **Java 21 설치**
-2. **PostgreSQL 설치 및 데이터베이스 생성**
-3. **환경 변수 설정**
-   - `DATABASE_URL`
-   - `GOOGLE_CLIENT_ID`
-   - `GOOGLE_CLIENT_SECRET`
-   - `JWT_SECRET`
+### 필수 요구사항
+- Java 17+
+- Gradle 8.0+
 
-4. **애플리케이션 실행**
-   ```bash
-   ./gradlew bootRun
-   ```
+### IDE 설정
+- IntelliJ IDEA 또는 Eclipse
+- Spring Boot DevTools 활성화
+- H2 Database 플러그인 (선택사항)
 
-## 📝 주요 변경사항
+### 로그 확인
+```bash
+# 애플리케이션 로그
+tail -f logs/claude-backend.log
 
-### API 버전 통일 (v1.0.0)
-- 모든 API 엔드포인트를 `/api/v1/`로 통일
-- API 버전 관리 설정 클래스 추가
-- Swagger 문서 업데이트
-- 향후 v2, v3 확장을 고려한 구조 설계
+# H2 데이터베이스 로그
+tail -f logs/h2.log
+```
+
+## 🧪 테스트
+
+### 단위 테스트
+```bash
+./gradlew test
+```
+
+### 통합 테스트
+```bash
+./gradlew integrationTest
+```
+
+### API 테스트
+1. 테스트 페이지 접속: `http://localhost:8080/`
+2. Google OAuth2 로그인 테스트
+3. 토큰 갱신 테스트
+4. API 호출 테스트
+
+## 📁 프로젝트 구조
+
+```
+src/
+├── main/
+│   ├── java/
+│   │   └── com/example/claude_backend/
+│   │       ├── application/     # 애플리케이션 서비스
+│   │       ├── domain/          # 도메인 모델
+│   │       ├── infrastructure/  # 인프라스트럭처
+│   │       └── presentation/    # 프레젠테이션 계층
+│   └── resources/
+│       ├── application.yml      # 설정 파일
+│       └── static/              # 정적 리소스
+└── test/                        # 테스트 코드
+```
+
+## 🔒 보안 설정
+
+### CORS 설정
+- 모든 Origin 허용 (개발 환경)
+- Authorization 헤더 허용
+- Credentials 허용
+
+### JWT 설정
+- 토큰 시크릿: 환경변수로 관리
+- Access Token: 7일
+- Refresh Token: 21일
+
+## 🚀 배포
+
+### Docker 배포
+```bash
+# Docker 이미지 빌드
+docker build -t claude-backend .
+
+# 컨테이너 실행
+docker run -p 8080:8080 claude-backend
+```
+
+### AWS 배포
+1. EC2 인스턴스 생성
+2. Java 17 설치
+3. 애플리케이션 배포
+4. Nginx 리버스 프록시 설정
+
+## 📝 변경 이력
+
+### v1.0.0 (2025-01-20)
+- ✅ Google OAuth2 로그인 구현
+- ✅ JWT 토큰 기반 인증
+- ✅ 실시간 주식 데이터 연동
+- ✅ 사용자 커스터마이징 기능
+- ✅ 친구 시스템
+- ✅ 상점 시스템
 
 ## 🤝 기여하기
 
@@ -110,3 +214,17 @@ PostgreSQL 기반 모의 주식 거래 시스템 백엔드 프로젝트
 3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
+
+## 📄 라이선스
+
+이 프로젝트는 MIT 라이선스 하에 배포됩니다. 자세한 내용은 `LICENSE` 파일을 참조하세요.
+
+## 📞 문의
+
+- **이메일**: support@claude-backend.com
+- **이슈**: GitHub Issues
+- **문서**: [Wiki](https://github.com/your-repo/wiki)
+
+---
+
+**Claude Backend** - 실시간 주식 거래 플랫폼의 백엔드 시스템

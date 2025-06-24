@@ -1,12 +1,20 @@
 package com.example.claude_backend.infrastructure.security.oauth2;
 
+import com.example.claude_backend.application.auth.OAuthTokenService;
+import com.example.claude_backend.domain.oauth.entity.OAuthToken;
+import com.example.claude_backend.domain.user.entity.User;
+import com.example.claude_backend.infrastructure.security.jwt.JwtTokenProvider;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,7 +24,8 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 
 /**
- * OAuth2 로그인 성공 시 처리하는 핸들러 CustomOAuth2UserService에서 생성된 토큰을 사용하여 프론트엔드로 리다이렉트
+ * OAuth2 로그인 성공 시 처리하는 핸들러
+ * 프론트엔드로 리디렉션하면서 토큰을 response body에 포함
  *
  * @author AI Assistant
  * @since 2025-01-20
@@ -29,6 +38,13 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
   @Value("${app.oauth2.authorized-redirect-uris}")
   private String[] authorizedRedirectUris;
 
+  @Value("${app.frontend.oauth-success-url:http://localhost:3000/oauth-success}")
+  private String frontendOAuthSuccessUrl;
+
+  private final OAuthTokenService oauthTokenService;
+  private final JwtTokenProvider jwtTokenProvider;
+  private final ObjectMapper objectMapper;
+
   @Override
   public void onAuthenticationSuccess(
       HttpServletRequest request, HttpServletResponse response, Authentication authentication)
@@ -37,37 +53,48 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     // 인증 정보를 SecurityContext에 명시적으로 설정
     SecurityContextHolder.getContext().setAuthentication(authentication);
 
-    String targetUrl = determineTargetUrl(request, response, authentication);
+    // OAuth2UserPrincipal에서 사용자 정보 추출
+    OAuth2UserPrincipal principal = (OAuth2UserPrincipal) authentication.getPrincipal();
+    UUID userId = principal.getId();
+    String userEmail = principal.getEmail();
 
-    if (response.isCommitted()) {
-      log.debug("응답이 이미 커밋되었습니다. {}로 리다이렉트할 수 없습니다.", targetUrl);
-      return;
+    log.info("OAuth2 로그인 성공 - 사용자 ID: {}, 이메일: {}", userId, userEmail);
+
+    // 최신 토큰 정보 조회
+    Optional<OAuthToken> oauthTokenOpt = oauthTokenService.findLatestTokenByUserId(userId);
+
+    if (oauthTokenOpt.isPresent()) {
+      OAuthToken oauthToken = oauthTokenOpt.get();
+
+      // 프론트엔드로 리디렉션하면서 토큰을 쿼리 파라미터로 전달
+      String targetUrl = determineTargetUrl(request, response, authentication, oauthToken);
+
+      log.debug("프론트엔드로 리디렉션: {}", targetUrl);
+
+      // 리디렉션
+      getRedirectStrategy().sendRedirect(request, response, targetUrl);
+    } else {
+      log.warn("사용자 {}의 토큰 정보를 찾을 수 없습니다.", userId);
+
+      // 토큰이 없는 경우 에러 페이지로 리디렉션
+      String errorUrl = frontendOAuthSuccessUrl + "?status=error&message=token_not_found";
+      getRedirectStrategy().sendRedirect(request, response, errorUrl);
     }
-
-    // 인증 속성은 유지 (clearAuthenticationAttributes 호출하지 않음)
-    getRedirectStrategy().sendRedirect(request, response, targetUrl);
   }
 
-  /** 리다이렉트 URL 결정 CustomOAuth2UserService에서 이미 토큰이 생성되고 저장되었으므로 여기서는 단순히 리다이렉트 URL만 결정 */
+  /** 리다이렉트 URL 결정 - 토큰을 쿼리 파라미터로 포함 */
   protected String determineTargetUrl(
-      HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
-    Optional<String> redirectUri = getCookie(request, "redirect_uri").map(Cookie::getValue);
+      HttpServletRequest request, HttpServletResponse response, Authentication authentication, OAuthToken oauthToken) {
 
-    if (redirectUri.isPresent() && !isAuthorizedRedirectUri(redirectUri.get())) {
-      throw new IllegalArgumentException("승인되지 않은 리다이렉트 URI입니다: " + redirectUri.get());
-    }
+    // 프론트엔드 OAuth 성공 URL로 리디렉션
+    String targetUrl = frontendOAuthSuccessUrl;
 
-    // Frontend 연결시 아래 해제
-    // String targetUrl = redirectUri.orElse(getDefaultTargetUrl());
+    // 토큰을 쿼리 파라미터로 추가
+    targetUrl += "?status=success";
+    targetUrl += "&access_token=" + oauthToken.getAccessToken();
+    targetUrl += "&refresh_token=" + oauthToken.getRefreshToken();
+    targetUrl += "&user_id=" + oauthToken.getUser().getId();
 
-    String targetUrl = "/auth/success"; // 프론트엔드 URL 대신 백엔드 URL 사용
-
-    // OAuth2UserPrincipal에서 사용자 정보 로그
-    OAuth2UserPrincipal principal = (OAuth2UserPrincipal) authentication.getPrincipal();
-    log.info("OAuth2 로그인 성공 - 사용자 ID: {}, 이메일: {}", principal.getId(), principal.getEmail());
-
-    // 토큰은 CustomOAuth2UserService에서 이미 생성되고 저장되었으므로
-    // 여기서는 단순히 성공 페이지로 리다이렉트
     return targetUrl;
   }
 

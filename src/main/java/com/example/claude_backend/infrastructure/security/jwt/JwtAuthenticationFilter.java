@@ -1,27 +1,25 @@
 package com.example.claude_backend.infrastructure.security.jwt;
 
 import com.example.claude_backend.application.user.service.UserService;
+import com.example.claude_backend.domain.user.entity.User;
 import com.example.claude_backend.infrastructure.security.oauth2.OAuth2UserPrincipal;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
- * JWT 토큰을 검증하고 인증 정보를 설정하는 필터
+ * JWT 토큰을 통한 인증을 처리하는 필터
+ * Authorization 헤더에서 Bearer 토큰을 추출하여 인증 처리
  *
  * @author AI Assistant
  * @since 2025-01-20
@@ -31,51 +29,55 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-  private final JwtTokenProvider tokenProvider;
+  private final JwtTokenProvider jwtTokenProvider;
   private final UserService userService;
 
-  /** 요청마다 JWT 토큰 검증 및 인증 처리 */
   @Override
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
+
     try {
-      String jwt = getJwtFromRequest(request);
+      // Authorization 헤더에서 토큰 추출
+      String token = getTokenFromRequest(request);
 
-      if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-        UUID userId = tokenProvider.getUserIdFromToken(jwt);
+      if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
+        // 토큰에서 사용자 ID 추출
+        UUID userId = jwtTokenProvider.getUserIdFromToken(token);
 
-        // DB 조회 없이 간단한 Principal 생성
-        OAuth2UserPrincipal principal =
-            new OAuth2UserPrincipal(
-                userId,
-                "user@example.com", // 임시 이메일
-                null,
-                List.of(new SimpleGrantedAuthority("ROLE_USER")),
-                new HashMap<>());
+        // 사용자 정보 로드
+        User user = userService.getUserEntityById(userId);
 
-        // Spring Security 인증 정보 설정
-        UsernamePasswordAuthenticationToken authentication =
-            new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
-        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        if (user != null) {
+          // OAuth2UserPrincipal 생성
+          OAuth2UserPrincipal principal = OAuth2UserPrincipal.create(user);
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        log.debug("JWT 인증 성공. 사용자 ID: {}", userId);
+          // 인증 객체 생성
+          UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+              principal, null, principal.getAuthorities());
+
+          // SecurityContext에 인증 정보 설정
+          SecurityContextHolder.getContext().setAuthentication(authentication);
+
+          log.debug("JWT 인증 성공 - 사용자 ID: {}", userId);
+        }
       }
-    } catch (Exception ex) {
-      log.error("Spring Security에 사용자 인증을 설정할 수 없습니다.", ex);
+    } catch (Exception e) {
+      log.error("JWT 인증 처리 중 오류 발생", e);
+      // 인증 실패 시에도 요청은 계속 진행 (인증이 필요한 엔드포인트에서 처리)
     }
 
     filterChain.doFilter(request, response);
   }
 
   /**
-   * Request에서 JWT 토큰 추출
+   * HTTP 요청에서 JWT 토큰을 추출
+   * Authorization 헤더의 Bearer 토큰 형식 지원
    *
    * @param request HTTP 요청
-   * @return JWT 토큰 또는 null
+   * @return JWT 토큰 (없으면 null)
    */
-  private String getJwtFromRequest(HttpServletRequest request) {
+  private String getTokenFromRequest(HttpServletRequest request) {
     String bearerToken = request.getHeader("Authorization");
 
     if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {

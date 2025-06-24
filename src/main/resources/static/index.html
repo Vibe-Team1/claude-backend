@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StockRoom SNS API</title>
+    <title>Claude Backend - OAuth2 & JWT 테스트</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -27,109 +27,399 @@
             margin-bottom: 30px;
         }
 
-        .api-section {
-            margin: 20px 0;
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+
+        .section h2 {
+            color: #555;
+            margin-top: 0;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .result {
+            margin-top: 15px;
             padding: 15px;
-            border-left: 4px solid #007bff;
             background-color: #f8f9fa;
-        }
-
-        .api-title {
-            font-weight: bold;
-            color: #007bff;
-            margin-bottom: 10px;
-        }
-
-        .api-url {
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+            white-space: pre-wrap;
             font-family: monospace;
-            background-color: #e9ecef;
-            padding: 5px 10px;
-            border-radius: 3px;
-            color: #495057;
-        }
-
-        .status {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 15px;
             font-size: 12px;
-            font-weight: bold;
-            margin-left: 10px;
+            max-height: 300px;
+            overflow-y: auto;
         }
 
-        .status.online {
+        .error {
+            border-left-color: #dc3545;
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .success {
+            border-left-color: #28a745;
             background-color: #d4edda;
             color: #155724;
         }
 
-        .status.offline {
-            background-color: #f8d7da;
-            color: #721c24;
+        .token-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .token-info div {
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
         }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <h1>🚀 StockRoom SNS API</h1>
+        <h1>🚀 Claude Backend - OAuth2 & JWT 테스트</h1>
 
-        <div class="api-section">
-            <div class="api-title">📊 API 상태</div>
-            <div>
-                서버 상태: <span class="status online">ONLINE</span>
-                <br>
-                서버 시간: <span id="server-time"></span>
-            </div>
+        <!-- OAuth2 로그인 섹션 -->
+        <div class="section">
+            <h2>🔐 OAuth2 로그인</h2>
+            <p>Google OAuth2를 통한 로그인을 테스트합니다.</p>
+            <button onclick="startOAuthLogin()">Google 로그인 시작</button>
+            <div id="oauthResult" class="result" style="display: none;"></div>
         </div>
 
-        <div class="api-section">
-            <div class="api-title">🔗 주요 API 엔드포인트</div>
-            <div>
-                <strong>Swagger API 문서:</strong>
-                <a href="/swagger-ui.html" class="api-url">/swagger-ui.html</a>
+        <!-- 토큰 정보 섹션 -->
+        <div class="section">
+            <h2>🎫 토큰 정보</h2>
+            <div class="token-info">
+                <div>
+                    <strong>Access Token:</strong><br>
+                    <span id="accessTokenDisplay">없음</span>
+                </div>
+                <div>
+                    <strong>Refresh Token:</strong><br>
+                    <span id="refreshTokenDisplay">없음</span>
+                </div>
+                <div>
+                    <strong>User ID:</strong><br>
+                    <span id="userIdDisplay">없음</span>
+                </div>
+                <div>
+                    <strong>토큰 상태:</strong><br>
+                    <span id="tokenStatus">미확인</span>
+                </div>
             </div>
-            <div>
-                <strong>인증 에러 페이지:</strong>
-                <a href="/api/v1/auth/error" class="api-url">/api/v1/auth/error</a>
-            </div>
-            <div>
-                <strong>OAuth 성공 페이지:</strong>
-                <a href="/auth/success" class="api-url">/auth/success</a>
-            </div>
-            <div>
-                <strong>토큰 정보:</strong>
-                <a href="/auth/token" class="api-url">/auth/token</a>
-            </div>
+            <button onclick="checkTokensFromUrl()">URL에서 토큰 확인</button>
+            <button onclick="clearTokens()">토큰 초기화</button>
         </div>
 
-        <div class="api-section">
-            <div class="api-title">🔐 OAuth2 로그인</div>
-            <div>
-                <strong>Google OAuth2 로그인:</strong>
-                <a href="/oauth2/authorization/google" class="api-url">/oauth2/authorization/google</a>
+        <!-- 토큰 갱신 섹션 -->
+        <div class="section">
+            <h2>🔄 토큰 갱신</h2>
+            <div class="form-group">
+                <label for="refreshTokenInput">Refresh Token:</label>
+                <input type="text" id="refreshTokenInput" placeholder="Refresh Token을 입력하세요">
             </div>
+            <button onclick="refreshToken()">토큰 갱신</button>
+            <div id="refreshResult" class="result" style="display: none;"></div>
         </div>
 
-        <div class="api-section">
-            <div class="api-title">📝 사용법</div>
-            <div>
-                1. Swagger UI에서 API 문서 확인 및 테스트
-                <br>
-                2. OAuth2 로그인으로 인증 테스트
-                <br>
-                3. 토큰 기반 API 호출 테스트
+        <!-- 토큰 검증 섹션 -->
+        <div class="section">
+            <h2>✅ 토큰 검증</h2>
+            <div class="form-group">
+                <label for="accessTokenInput">Access Token:</label>
+                <input type="text" id="accessTokenInput" placeholder="Access Token을 입력하세요">
             </div>
+            <button onclick="verifyToken()">토큰 검증</button>
+            <div id="verifyResult" class="result" style="display: none;"></div>
+        </div>
+
+        <!-- API 테스트 섹션 -->
+        <div class="section">
+            <h2>🧪 API 테스트</h2>
+            <button onclick="testUserMe()">사용자 정보 조회 (/api/v1/users/me)</button>
+            <button onclick="testStocks()">주식 목록 조회 (/api/v1/stocks)</button>
+            <div id="apiResult" class="result" style="display: none;"></div>
         </div>
     </div>
 
     <script>
-        // 서버 시간 표시
-        function updateTime() {
-            const now = new Date();
-            document.getElementById('server-time').textContent = now.toLocaleString('ko-KR');
+        // 페이지 로드 시 URL에서 토큰 확인
+        window.onload = function () {
+            checkTokensFromUrl();
+        };
+
+        // OAuth2 로그인 시작
+        function startOAuthLogin() {
+            const resultDiv = document.getElementById('oauthResult');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+            resultDiv.textContent = 'Google OAuth2 로그인을 시작합니다...\n리디렉션 후 이 페이지로 돌아와주세요.';
+
+            // Google OAuth2 로그인 URL로 리디렉션
+            window.location.href = '/oauth2/authorization/google';
         }
-        updateTime();
-        setInterval(updateTime, 1000);
+
+        // URL에서 토큰 정보 확인
+        function checkTokensFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const accessToken = urlParams.get('access_token');
+            const refreshToken = urlParams.get('refresh_token');
+            const userId = urlParams.get('user_id');
+            const status = urlParams.get('status');
+
+            if (status === 'success' && accessToken && refreshToken) {
+                // 토큰 정보 저장
+                localStorage.setItem('accessToken', accessToken);
+                localStorage.setItem('refreshToken', refreshToken);
+                localStorage.setItem('userId', userId);
+
+                // 화면에 표시
+                updateTokenDisplay(accessToken, refreshToken, userId);
+
+                // URL에서 토큰 파라미터 제거
+                const newUrl = window.location.pathname;
+                window.history.replaceState({}, document.title, newUrl);
+
+                document.getElementById('tokenStatus').textContent = '✅ 유효한 토큰';
+                document.getElementById('tokenStatus').style.color = 'green';
+            } else if (status === 'error') {
+                document.getElementById('tokenStatus').textContent = '❌ 토큰 오류';
+                document.getElementById('tokenStatus').style.color = 'red';
+            } else {
+                // 저장된 토큰이 있는지 확인
+                const savedAccessToken = localStorage.getItem('accessToken');
+                const savedRefreshToken = localStorage.getItem('refreshToken');
+                const savedUserId = localStorage.getItem('userId');
+
+                if (savedAccessToken && savedRefreshToken) {
+                    updateTokenDisplay(savedAccessToken, savedRefreshToken, savedUserId);
+                    document.getElementById('tokenStatus').textContent = '✅ 저장된 토큰';
+                    document.getElementById('tokenStatus').style.color = 'green';
+                } else {
+                    document.getElementById('tokenStatus').textContent = '❌ 토큰 없음';
+                    document.getElementById('tokenStatus').style.color = 'red';
+                }
+            }
+        }
+
+        // 토큰 정보 화면 업데이트
+        function updateTokenDisplay(accessToken, refreshToken, userId) {
+            document.getElementById('accessTokenDisplay').textContent =
+                accessToken ? accessToken.substring(0, 20) + '...' : '없음';
+            document.getElementById('refreshTokenDisplay').textContent =
+                refreshToken ? refreshToken.substring(0, 20) + '...' : '없음';
+            document.getElementById('userIdDisplay').textContent = userId || '없음';
+        }
+
+        // 토큰 초기화
+        function clearTokens() {
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            localStorage.removeItem('userId');
+            updateTokenDisplay(null, null, null);
+            document.getElementById('tokenStatus').textContent = '❌ 토큰 없음';
+            document.getElementById('tokenStatus').style.color = 'red';
+        }
+
+        // 토큰 갱신
+        async function refreshToken() {
+            const refreshToken = document.getElementById('refreshTokenInput').value || localStorage.getItem('refreshToken');
+            const resultDiv = document.getElementById('refreshResult');
+
+            if (!refreshToken) {
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result error';
+                resultDiv.textContent = 'Refresh Token이 필요합니다.';
+                return;
+            }
+
+            try {
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result';
+                resultDiv.textContent = '토큰 갱신 중...';
+
+                const formData = new FormData();
+                formData.append('refreshToken', refreshToken);
+
+                const response = await fetch('/api/v1/auth/refresh', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    // 새로운 토큰 저장
+                    localStorage.setItem('accessToken', result.data.access_token);
+                    localStorage.setItem('refreshToken', result.data.refresh_token);
+                    localStorage.setItem('userId', result.data.user_id);
+
+                    // 화면 업데이트
+                    updateTokenDisplay(result.data.access_token, result.data.refresh_token, result.data.user_id);
+
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = '✅ 토큰 갱신 성공!\n\n' + JSON.stringify(result, null, 2);
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = '❌ 토큰 갱신 실패\n\n' + JSON.stringify(result, null, 2);
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '❌ 토큰 갱신 중 오류 발생:\n' + error.message;
+            }
+        }
+
+        // 토큰 검증
+        async function verifyToken() {
+            const accessToken = document.getElementById('accessTokenInput').value || localStorage.getItem('accessToken');
+            const resultDiv = document.getElementById('verifyResult');
+
+            if (!accessToken) {
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result error';
+                resultDiv.textContent = 'Access Token이 필요합니다.';
+                return;
+            }
+
+            try {
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result';
+                resultDiv.textContent = '토큰 검증 중...';
+
+                const formData = new FormData();
+                formData.append('accessToken', accessToken);
+
+                const response = await fetch('/api/v1/auth/verify', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = '✅ 토큰 검증 성공!\n\n' + JSON.stringify(result, null, 2);
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = '❌ 토큰 검증 실패\n\n' + JSON.stringify(result, null, 2);
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '❌ 토큰 검증 중 오류 발생:\n' + error.message;
+            }
+        }
+
+        // 사용자 정보 조회 테스트
+        async function testUserMe() {
+            const accessToken = localStorage.getItem('accessToken');
+            const resultDiv = document.getElementById('apiResult');
+
+            if (!accessToken) {
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result error';
+                resultDiv.textContent = 'Access Token이 필요합니다.';
+                return;
+            }
+
+            try {
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result';
+                resultDiv.textContent = '사용자 정보 조회 중...';
+
+                const response = await fetch('/api/v1/users/me', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + accessToken,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = '✅ 사용자 정보 조회 성공!\n\n' + JSON.stringify(result, null, 2);
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = '❌ 사용자 정보 조회 실패\n\n' + JSON.stringify(result, null, 2);
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '❌ 사용자 정보 조회 중 오류 발생:\n' + error.message;
+            }
+        }
+
+        // 주식 목록 조회 테스트
+        async function testStocks() {
+            const resultDiv = document.getElementById('apiResult');
+
+            try {
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result';
+                resultDiv.textContent = '주식 목록 조회 중...';
+
+                const response = await fetch('/api/v1/stocks', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = '✅ 주식 목록 조회 성공!\n\n' + JSON.stringify(result, null, 2);
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = '❌ 주식 목록 조회 실패\n\n' + JSON.stringify(result, null, 2);
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '❌ 주식 목록 조회 중 오류 발생:\n' + error.message;
+            }
+        }
     </script>
 </body>
 
