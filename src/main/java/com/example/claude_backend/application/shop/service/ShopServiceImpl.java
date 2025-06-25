@@ -79,6 +79,12 @@ public class ShopServiceImpl implements ShopService {
   }
 
   private String generateRandomCharacterCode(DrawType type) {
+    // 발표용: SUPREME 뽑기에서 무조건 166번 캐릭터 반환
+    if (type == DrawType.SUPREME) {
+      return "166";
+    }
+
+    // 기존 로직 (NORMAL, PREMIUM)
     int minCode = type.getMinCode();
     int maxCode = type.getMaxCode();
     int randomCode = ThreadLocalRandom.current().nextInt(minCode, maxCode + 1);

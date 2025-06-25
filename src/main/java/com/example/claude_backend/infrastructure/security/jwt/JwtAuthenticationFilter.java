@@ -18,8 +18,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
- * JWT 토큰을 통한 인증을 처리하는 필터
- * Authorization 헤더에서 Bearer 토큰을 추출하여 인증 처리
+ * JWT 토큰을 통한 인증을 처리하는 필터 Authorization 헤더에서 Bearer 토큰을 추출하여 인증 처리
  *
  * @author AI Assistant
  * @since 2025-01-20
@@ -53,8 +52,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
           OAuth2UserPrincipal principal = OAuth2UserPrincipal.create(user);
 
           // 인증 객체 생성
-          UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-              principal, null, principal.getAuthorities());
+          UsernamePasswordAuthenticationToken authentication =
+              new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
 
           // SecurityContext에 인증 정보 설정
           SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -71,8 +70,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   }
 
   /**
-   * HTTP 요청에서 JWT 토큰을 추출
-   * Authorization 헤더의 Bearer 토큰 형식 지원
+   * HTTP 요청에서 JWT 토큰을 추출 Authorization 헤더의 Bearer 토큰 형식 지원
    *
    * @param request HTTP 요청
    * @return JWT 토큰 (없으면 null)

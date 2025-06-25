@@ -140,7 +140,7 @@ public class AuthSuccessController {
 
   /**
    * Refresh Token을 사용하여 새로운 Access Token 발급
-   * 
+   *
    * @param refreshToken 리프레시 토큰
    * @return 새로운 액세스 토큰과 리프레시 토큰
    */
@@ -148,7 +148,9 @@ public class AuthSuccessController {
   public ResponseEntity<ApiResponse<Map<String, String>>> refreshToken(
       @RequestParam String refreshToken) {
 
-    log.info("토큰 갱신 요청 - Refresh Token: {}", refreshToken.substring(0, Math.min(20, refreshToken.length())) + "...");
+    log.info(
+        "토큰 갱신 요청 - Refresh Token: {}",
+        refreshToken.substring(0, Math.min(20, refreshToken.length())) + "...");
 
     try {
       // Refresh Token으로 사용자 ID 추출
@@ -173,10 +175,12 @@ public class AuthSuccessController {
 
         // Access Token 만료 시간 계산
         Date accessTokenExpiry = jwtTokenProvider.getTokenExpiry(newAccessToken);
-        LocalDateTime expiresAt = accessTokenExpiry.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        LocalDateTime expiresAt =
+            accessTokenExpiry.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 
         // 토큰 정보 업데이트
-        oauthTokenService.saveToken(oauthToken.getUser(), "GOOGLE", newAccessToken, newRefreshToken, expiresAt);
+        oauthTokenService.saveToken(
+            oauthToken.getUser(), "GOOGLE", newAccessToken, newRefreshToken, expiresAt);
 
         // Response Body에 토큰 포함
         Map<String, String> tokenResponse = new HashMap<>();
@@ -203,7 +207,7 @@ public class AuthSuccessController {
 
   /**
    * 현재 토큰 상태 확인
-   * 
+   *
    * @param accessToken 액세스 토큰
    * @return 토큰 유효성 및 사용자 정보
    */
@@ -264,7 +268,8 @@ public class AuthSuccessController {
   }
 
   /** 토큰을 쿠키에 설정 */
-  private void setTokenCookies(HttpServletResponse response, String accessToken, String refreshToken) {
+  private void setTokenCookies(
+      HttpServletResponse response, String accessToken, String refreshToken) {
     // Access Token 쿠키 설정
     Cookie accessTokenCookie = new Cookie("access_token", accessToken);
     accessTokenCookie.setPath("/");

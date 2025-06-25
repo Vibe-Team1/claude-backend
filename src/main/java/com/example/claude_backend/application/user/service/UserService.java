@@ -1,10 +1,10 @@
 package com.example.claude_backend.application.user.service;
 
+import com.example.claude_backend.application.user.dto.UserMeResponse;
 import com.example.claude_backend.application.user.dto.UserResponse;
 import com.example.claude_backend.application.user.dto.UserSearchResponse;
 import com.example.claude_backend.application.user.dto.UserStockResponse;
 import com.example.claude_backend.application.user.dto.UserUpdateRequest;
-import com.example.claude_backend.application.user.dto.UserMeResponse;
 import com.example.claude_backend.domain.user.entity.User;
 import java.util.List;
 import java.util.UUID;
@@ -52,7 +52,7 @@ public interface UserService {
   /**
    * 사용자 정보 수정
    *
-   * @param userId  사용자 ID
+   * @param userId 사용자 ID
    * @param request 수정 요청 DTO
    * @return 수정된 사용자 응답 DTO
    */
@@ -61,7 +61,7 @@ public interface UserService {
   /**
    * 닉네임 중복 확인
    *
-   * @param nickname      확인할 닉네임
+   * @param nickname 확인할 닉네임
    * @param excludeUserId 제외할 사용자 ID (본인 제외)
    * @return 사용 가능 여부
    */
@@ -70,9 +70,9 @@ public interface UserService {
   /**
    * OAuth 로그인 또는 회원가입
    *
-   * @param email           Google 이메일
-   * @param googleSub       Google Subject ID
-   * @param name            Google 계정 이름
+   * @param email Google 이메일
+   * @param googleSub Google Subject ID
+   * @param name Google 계정 이름
    * @param profileImageUrl Google 프로필 이미지 URL
    * @return 생성 또는 업데이트된 사용자
    */

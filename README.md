@@ -10,6 +10,7 @@
 - **사용자 커스터마이징**: 캐릭터, 배경 변경
 - **친구 시스템**: 사용자 간 친구 추가/삭제
 - **상점 시스템**: 도토리로 아이템 구매
+- **실시간 채팅**: WebSocket + STOMP + Redis Pub/Sub 기반 실시간 채팅
 
 ## 🛠 기술 스택
 
@@ -20,6 +21,8 @@
 - **API Documentation**: Swagger/OpenAPI 3
 - **Build Tool**: Gradle
 - **Cloud**: AWS S3 (파일 저장)
+- **WebSocket**: Spring WebSocket + STOMP
+- **Redis**: Pub/Sub
 
 ## 📋 API 문서
 
@@ -206,6 +209,7 @@ docker run -p 8080:8080 claude-backend
 - ✅ 사용자 커스터마이징 기능
 - ✅ 친구 시스템
 - ✅ 상점 시스템
+- ✅ 실시간 채팅 기능
 
 ## 🤝 기여하기
 

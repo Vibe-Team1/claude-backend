@@ -13,7 +13,7 @@ public interface OAuthTokenRepository extends JpaRepository<OAuthToken, UUID> {
 
   /**
    * 사용자 ID로 토큰을 조회합니다.
-   * 
+   *
    * @param userId 사용자 ID
    * @return OAuth 토큰 (Optional)
    */

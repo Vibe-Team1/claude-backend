@@ -2,7 +2,6 @@ package com.example.claude_backend.infrastructure.security.oauth2;
 
 import com.example.claude_backend.application.auth.OAuthTokenService;
 import com.example.claude_backend.domain.oauth.entity.OAuthToken;
-import com.example.claude_backend.domain.user.entity.User;
 import com.example.claude_backend.infrastructure.security.jwt.JwtTokenProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
@@ -11,8 +10,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -24,8 +21,7 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 
 /**
- * OAuth2 로그인 성공 시 처리하는 핸들러
- * 프론트엔드로 리디렉션하면서 토큰을 response body에 포함
+ * OAuth2 로그인 성공 시 처리하는 핸들러 프론트엔드로 리디렉션하면서 토큰을 response body에 포함
  *
  * @author AI Assistant
  * @since 2025-01-20
@@ -67,7 +63,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
       OAuthToken oauthToken = oauthTokenOpt.get();
 
       // accessToken만 쿼리 파라미터로 전달
-      String targetUrl = frontendOAuthSuccessUrl + "?status=success&access_token=" + oauthToken.getAccessToken();
+      String targetUrl =
+          frontendOAuthSuccessUrl + "?status=success&access_token=" + oauthToken.getAccessToken();
 
       log.debug("프론트엔드로 리디렉션: {}", targetUrl);
 
@@ -84,7 +81,10 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
   /** 리다이렉트 URL 결정 - 토큰을 쿼리 파라미터로 포함 */
   protected String determineTargetUrl(
-      HttpServletRequest request, HttpServletResponse response, Authentication authentication, OAuthToken oauthToken) {
+      HttpServletRequest request,
+      HttpServletResponse response,
+      Authentication authentication,
+      OAuthToken oauthToken) {
 
     // 프론트엔드 OAuth 성공 URL로 리디렉션
     String targetUrl = frontendOAuthSuccessUrl;

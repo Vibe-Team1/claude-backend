@@ -32,6 +32,13 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
+	
+	// WebSocket
+	implementation("org.springframework.boot:spring-boot-starter-websocket")
+	implementation("org.springframework:spring-messaging")
+	
+	// Redis
+	implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
 	// Database
 	runtimeOnly("org.postgresql:postgresql")

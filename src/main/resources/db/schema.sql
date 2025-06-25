@@ -197,6 +197,17 @@ CREATE TABLE IF NOT EXISTS user_friends (
 CREATE INDEX IF NOT EXISTS idx_user_friends_user_id ON user_friends(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_friends_friend_id ON user_friends(friend_id);
 
+-- 뉴스 테이블
+CREATE TABLE IF NOT EXISTS news (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    summary TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 뉴스 인덱스
+CREATE INDEX IF NOT EXISTS idx_news_created_at ON news(created_at DESC);
+
 -- 업데이트 시간 자동 갱신 함수
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -239,3 +250,7 @@ CREATE TRIGGER update_user_characters_updated_at BEFORE UPDATE
 
 CREATE TRIGGER update_user_friends_updated_at BEFORE UPDATE
     ON user_friends FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- 뉴스 테이블 트리거
+CREATE TRIGGER update_news_updated_at BEFORE UPDATE
+    ON news FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

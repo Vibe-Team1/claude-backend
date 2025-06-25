@@ -17,14 +17,17 @@ import org.hibernate.annotations.GenericGenerator;
  * @since 2025-01-20
  */
 @Entity
-@Table(name = "users", indexes = {
-    @Index(name = "idx_users_email", columnList = "email"),
-    @Index(name = "idx_users_google_sub", columnList = "google_sub"),
-    @Index(name = "idx_users_nickname", columnList = "nickname")
-}, uniqueConstraints = {
-    @UniqueConstraint(name = "uk_users_email", columnNames = "email"),
-    @UniqueConstraint(name = "uk_users_google_sub", columnNames = "google_sub")
-})
+@Table(
+    name = "users",
+    indexes = {
+      @Index(name = "idx_users_email", columnList = "email"),
+      @Index(name = "idx_users_google_sub", columnList = "google_sub"),
+      @Index(name = "idx_users_nickname", columnList = "nickname")
+    },
+    uniqueConstraints = {
+      @UniqueConstraint(name = "uk_users_email", columnNames = "email"),
+      @UniqueConstraint(name = "uk_users_google_sub", columnNames = "google_sub")
+    })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor

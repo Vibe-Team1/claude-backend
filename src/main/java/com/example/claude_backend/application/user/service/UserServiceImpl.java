@@ -1,11 +1,11 @@
 package com.example.claude_backend.application.user.service;
 
 import com.example.claude_backend.application.account.service.AccountService;
+import com.example.claude_backend.application.user.dto.UserMeResponse;
 import com.example.claude_backend.application.user.dto.UserResponse;
 import com.example.claude_backend.application.user.dto.UserSearchResponse;
 import com.example.claude_backend.application.user.dto.UserStockResponse;
 import com.example.claude_backend.application.user.dto.UserUpdateRequest;
-import com.example.claude_backend.application.user.dto.UserMeResponse;
 import com.example.claude_backend.application.user.mapper.UserMapper;
 import com.example.claude_backend.domain.user.entity.User;
 import com.example.claude_backend.domain.user.entity.UserBackground;
@@ -53,7 +53,8 @@ public class UserServiceImpl implements UserService {
   @Override
   public UserResponse getUserById(UUID userId) {
     log.debug("사용자 조회 시작. ID: {}", userId);
-    User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
+    User user =
+        userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
 
     return userMapper.toUserResponse(user);
   }
@@ -62,7 +63,8 @@ public class UserServiceImpl implements UserService {
   @Override
   public UserResponse getUserByEmail(String email) {
     log.debug("사용자 조회 시작. 이메일: {}", email);
-    User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(email));
+    User user =
+        userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(email));
 
     return userMapper.toUserResponse(user);
   }
@@ -80,7 +82,8 @@ public class UserServiceImpl implements UserService {
   public UserResponse updateUser(UUID userId, UserUpdateRequest request) {
     log.info("사용자 정보 수정 시작. ID: {}", userId);
 
-    User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
+    User user =
+        userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
 
     // 닉네임 변경
     if (request.getNickname() != null && !request.getNickname().equals(user.getNickname())) {
@@ -150,12 +153,13 @@ public class UserServiceImpl implements UserService {
 
   /**
    * 사용자 Entity 조회 (roles 포함, 인증용)
-   * 
+   *
    * @param userId 사용자 ID
    * @return 사용자 Entity (roles가 로드된 상태)
    */
   public User getUserEntityWithRolesById(UUID userId) {
-    User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
+    User user =
+        userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
     // roles 컬렉션을 명시적으로 로드
     user.getRoles().size(); // 컬렉션을 초기화하여 지연 로딩 방지
     return user;
@@ -166,9 +170,10 @@ public class UserServiceImpl implements UserService {
   public List<UserStockResponse> getUserStocks(UUID userId) {
     log.debug("사용자 보유 주식 조회 시작. ID: {}", userId);
 
-    User user = userRepository
-        .findById(userId)
-        .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
+    User user =
+        userRepository
+            .findById(userId)
+            .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
 
     return userStockRepository.findByUser(user).stream()
         .map(this::convertToUserStockResponse)
@@ -202,17 +207,20 @@ public class UserServiceImpl implements UserService {
     }
 
     // 닉네임으로 사용자 조회
-    User user = userRepository.findByNickname(nickname.trim())
-        .orElseThrow(() -> new UserNotFoundException("닉네임 '" + nickname + "'을 가진 사용자를 찾을 수 없습니다."));
+    User user =
+        userRepository
+            .findByNickname(nickname.trim())
+            .orElseThrow(
+                () -> new UserNotFoundException("닉네임 '" + nickname + "'을 가진 사용자를 찾을 수 없습니다."));
 
     // 계좌 정보 조회
     var account = accountService.getUserAccount(user.getId());
 
     // 보유 캐릭터 코드 목록 조회
-    List<String> characterCodes = userCharacterRepository.findByUserId(user.getId())
-        .stream()
-        .map(UserCharacter::getCharacterCode)
-        .collect(Collectors.toList());
+    List<String> characterCodes =
+        userCharacterRepository.findByUserId(user.getId()).stream()
+            .map(UserCharacter::getCharacterCode)
+            .collect(Collectors.toList());
 
     // UserProfile 정보 (null 체크 포함)
     UserProfile profile = user.getProfile();
@@ -247,19 +255,22 @@ public class UserServiceImpl implements UserService {
     String nickname = generateUniqueNickname(name != null ? name : email.split("@")[0]);
 
     // 사용자 생성
-    User newUser = User.builder()
-        .googleSub(googleSub)
-        .email(email)
-        .nickname(nickname)
-        .status(User.UserStatus.ACTIVE)
-        .build();
+    User newUser =
+        User.builder()
+            .googleSub(googleSub)
+            .email(email)
+            .nickname(nickname)
+            .status(User.UserStatus.ACTIVE)
+            .build();
 
     // 프로필 생성
-    UserProfile profile = UserProfile.builder().user(newUser).profileImageUrl(profileImageUrl).build();
+    UserProfile profile =
+        UserProfile.builder().user(newUser).profileImageUrl(profileImageUrl).build();
     newUser.setProfile(profile);
 
     // 기본 권한 부여
-    UserRole userRole = UserRole.builder().user(newUser).roleName(UserRole.RoleName.ROLE_USER).build();
+    UserRole userRole =
+        UserRole.builder().user(newUser).roleName(UserRole.RoleName.ROLE_USER).build();
     newUser.addRole(userRole);
 
     User savedUser = userRepository.save(newUser);
@@ -328,11 +339,13 @@ public class UserServiceImpl implements UserService {
   private UserStockResponse convertToUserStockResponse(UserStock userStock) {
     Double currentPrice = userStock.getStock().getCurrentPrice().doubleValue();
     Double totalValue = currentPrice * userStock.getQuantity();
-    Double averagePrice = userStock.getAveragePrice() != null
-        ? userStock.getAveragePrice().doubleValue()
-        : currentPrice;
+    Double averagePrice =
+        userStock.getAveragePrice() != null
+            ? userStock.getAveragePrice().doubleValue()
+            : currentPrice;
     Double profitLoss = totalValue - (averagePrice * userStock.getQuantity());
-    Double profitLossRate = averagePrice > 0 ? (profitLoss / (averagePrice * userStock.getQuantity())) * 100 : 0.0;
+    Double profitLossRate =
+        averagePrice > 0 ? (profitLoss / (averagePrice * userStock.getQuantity())) * 100 : 0.0;
 
     return UserStockResponse.builder()
         .stockCode(userStock.getStock().getTicker())
@@ -352,16 +365,17 @@ public class UserServiceImpl implements UserService {
     log.debug("현재 사용자 모든 정보 조회 시작. ID: {}", userId);
 
     // 사용자 기본 정보 조회
-    User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
+    User user =
+        userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
 
     // 계좌 정보 조회
     var account = accountService.getUserAccount(userId);
 
     // 보유 캐릭터 코드 목록 조회
-    List<String> characterCodes = userCharacterRepository.findByUserId(userId)
-        .stream()
-        .map(UserCharacter::getCharacterCode)
-        .collect(Collectors.toList());
+    List<String> characterCodes =
+        userCharacterRepository.findByUserId(userId).stream()
+            .map(UserCharacter::getCharacterCode)
+            .collect(Collectors.toList());
 
     // UserProfile 정보 (null 체크 포함)
     UserProfile profile = user.getProfile();

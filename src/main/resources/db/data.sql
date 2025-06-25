@@ -166,6 +166,16 @@ VALUES
     ('660e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440001', 'GOOGLE', 'test_access_token_2', 'test_refresh_token_2', CURRENT_TIMESTAMP + INTERVAL '1 day', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 ON CONFLICT (id) DO NOTHING;
 
+-- 뉴스 테스트 데이터 생성
+INSERT INTO news (id, summary, created_at, updated_at)
+VALUES 
+    ('770e8400-e29b-41d4-a716-446655440000', '삼성전자, 반도체 시장 회복세로 실적 개선 전망', CURRENT_TIMESTAMP - INTERVAL '1 day', CURRENT_TIMESTAMP - INTERVAL '1 day'),
+    ('770e8400-e29b-41d4-a716-446655440001', 'SK하이닉스, AI 메모리 수요 증가로 매출 성장 예상', CURRENT_TIMESTAMP - INTERVAL '2 days', CURRENT_TIMESTAMP - INTERVAL '2 days'),
+    ('770e8400-e29b-41d4-a716-446655440002', 'NAVER, AI 기술 투자 확대로 미래 성장 동력 확보', CURRENT_TIMESTAMP - INTERVAL '3 days', CURRENT_TIMESTAMP - INTERVAL '3 days'),
+    ('770e8400-e29b-41d4-a716-446655440003', '카카오, 금융 서비스 확장으로 새로운 수익원 발굴', CURRENT_TIMESTAMP - INTERVAL '4 days', CURRENT_TIMESTAMP - INTERVAL '4 days'),
+    ('770e8400-e29b-41d4-a716-446655440004', 'LG화학, 전기차 배터리 시장 점유율 확대 전략 발표', CURRENT_TIMESTAMP - INTERVAL '5 days', CURRENT_TIMESTAMP - INTERVAL '5 days')
+ON CONFLICT (id) DO NOTHING;
+
 -- ===== 통계 확인용 쿼리 =====
 
 SELECT

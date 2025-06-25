@@ -20,24 +20,24 @@ import lombok.NoArgsConstructor;
 @Builder
 public class UserMeResponse {
 
-    // users 테이블 정보
-    private UUID userId;
-    private String email;
-    private String nickname;
-    private String status;
+  // users 테이블 정보
+  private UUID userId;
+  private String email;
+  private String nickname;
+  private String status;
 
-    // user_profiles 테이블 정보
-    private String currentCharacterCode;
-    private String currentBackgroundCode;
-    private String profileImageUrl;
-    private String bio;
-    private Long totalAssets;
-    private Integer roomLevel;
+  // user_profiles 테이블 정보
+  private String currentCharacterCode;
+  private String currentBackgroundCode;
+  private String profileImageUrl;
+  private String bio;
+  private Long totalAssets;
+  private Integer roomLevel;
 
-    // accounts 테이블 정보
-    private BigDecimal balance;
-    private Integer acorn;
+  // accounts 테이블 정보
+  private BigDecimal balance;
+  private Integer acorn;
 
-    // user_characters 테이블 정보
-    private List<String> characterCodes;
+  // user_characters 테이블 정보
+  private List<String> characterCodes;
 }

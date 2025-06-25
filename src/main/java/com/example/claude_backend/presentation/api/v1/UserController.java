@@ -1,10 +1,10 @@
 package com.example.claude_backend.presentation.api.v1;
 
+import com.example.claude_backend.application.user.dto.UserMeResponse;
 import com.example.claude_backend.application.user.dto.UserResponse;
 import com.example.claude_backend.application.user.dto.UserSearchResponse;
 import com.example.claude_backend.application.user.dto.UserStockResponse;
 import com.example.claude_backend.application.user.dto.UserUpdateRequest;
-import com.example.claude_backend.application.user.dto.UserMeResponse;
 import com.example.claude_backend.application.user.service.UserService;
 import com.example.claude_backend.common.util.SecurityUtil;
 import com.example.claude_backend.presentation.api.v1.response.ApiResponse;
@@ -61,8 +61,7 @@ public class UserController {
    */
   @GetMapping("/others")
   @Operation(summary = "다른 사용자 정보 조회", description = "닉네임으로 다른 사용자의 공개 정보를 조회합니다.")
-  public ResponseEntity<ApiResponse<UserMeResponse>> getOtherUser(
-      @RequestParam String nickname) {
+  public ResponseEntity<ApiResponse<UserMeResponse>> getOtherUser(@RequestParam String nickname) {
     log.debug("다른 사용자 정보 조회 요청. 닉네임: {}", nickname);
 
     UserMeResponse user = userService.getOtherUserInfoByNickname(nickname);
@@ -130,7 +129,9 @@ public class UserController {
    * @return 검색 결과
    */
   @GetMapping("/search")
-  @Operation(summary = "사용자 검색", description = "닉네임으로 사용자를 검색합니다. 닉네임, 현재 캐릭터, 계좌 잔액, 보유 캐릭터 개수를 반환합니다.")
+  @Operation(
+      summary = "사용자 검색",
+      description = "닉네임으로 사용자를 검색합니다. 닉네임, 현재 캐릭터, 계좌 잔액, 보유 캐릭터 개수를 반환합니다.")
   public ResponseEntity<ApiResponse<List<UserSearchResponse>>> searchUsers(
       @RequestParam String nickname) {
     log.debug("사용자 검색 요청: {}", nickname);
